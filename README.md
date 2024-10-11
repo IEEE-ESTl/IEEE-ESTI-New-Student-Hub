@@ -29,7 +29,8 @@
 <h2 align="center">Instalación</h2>
 <p>Para hacer uso de este proyecto de manera local es necesario descargar el código desde el apartado “code” o si lo desea puede ejecutar los siguientes comandos en la terminal de visual studio code.</p>
 
-- `git clone https://github.com/IEEE-ESTl/IEEE-ESTI-New-Student-Hub.git`  para clonar el proyecto
+- `git clone https://github.com/IEEE-ESTl/IEEE-ESTI-New-Student-Hub.git` para clonar el proyecto
+- `cd IEEE-ESTI-New-Student-Hub` para cambiarse al directorio donde se clonó el proyecto
 
 - `npm install` para instalar todas las dependencias del proyecto
 - `npm run dev` para abrir una previsualización del proyecto de forma local
