@@ -40,22 +40,22 @@ const MemberCard = ({ member }: { member: Member }) => {
     return (
 
         <>
-            <Card isFooterBlurred className="w-[300px] h-[350px] ">
+            <Card isFooterBlurred className="w-[300px] h-[400px] bg-black">
                 <div>
                     <Image
                         isZoomed
                         removeWrapper
                         alt="Relaxing app background"
-                        className="z-0 w-full h-full object-cover"
+                        className="z-0  object-cover h-[105%]"
                         src={member.image}
                     />
 
                 </div>
-                <CardFooter className="w-80 h-32 absolute bg-black/40 bottom-0 z-10">
+                <CardFooter className="w-80 h-24 absolute bg-black/40 bottom-0 z-10">
                     <div className="flex flex-col gap-2 p-4 w-full">
                         <div className="flex flex-grow gap-2 items-center">
                             <div className="flex flex-col">
-                                <h3 className="text-md text-white font-semibold">{member.name}</h3>
+                                <h3 className="text-sm text-white font-semibold">{member.name}</h3>
                                 <p className="text-tiny text-white/60">Miembro desde {member.date}</p>
                             </div>
                         </div>
@@ -64,6 +64,7 @@ const MemberCard = ({ member }: { member: Member }) => {
                             {badges && badges.map((badge, index) => (
                                 <Tooltip
                                     key={`${member.name}-${badge.name}-${index}`}
+                                    size="sm"
                                     offset={15}
                                     delay={2}
                                     closeDelay={2}

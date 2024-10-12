@@ -1,6 +1,6 @@
 import image_a from '@/assets/image-home-1.webp';
-import image_b from '@/assets/image-home-2.webp';
-import image_c from '@/assets/image-home-3.webp';
+import image_b from '@/assets/eventos/tallerGit.jpeg';
+import image_c from '@/assets/eventos/tallerSql.jpeg';
 import JoinForm from './JoinForm';
 import BoxReveal from '@/components/magicui/box-reveal';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +10,7 @@ export const Inicio = () => {
   
   const navigate = useNavigate();
 
-  const disabled = true;
+  const disabled = false;
 
   return (
     <section className="flex flex-row items-center justify-center space-x-20" id="home">
@@ -30,7 +30,7 @@ export const Inicio = () => {
 
           <div className="flex flex-row gap-6 lg:gap-10 mt-6 items-center justify-center lg:justify-start">
             <BoxReveal boxColor={'#0371a4'} duration={0.5}>
-              <JoinForm text='Unirse' disable={disabled} className={`${disabled === true ? 'bg-[#c4cdd1] text-[#9ca9b5]' : 'bg-[#0371a4] text-white transition-all duration-500 hover:scale-90'}  py-4 px-6 rounded-[1.5rem] font-semibold  font-jetbrains`}/>    
+              <JoinForm text='Unirse' disable={disabled} className={`${disabled  ? 'bg-[#c4cdd1] text-[#9ca9b5]' : 'bg-[#0371a4] text-white transition-all duration-500 hover:scale-90'}  py-4 px-6 rounded-[1.5rem] font-semibold  font-jetbrains`}/>    
             </BoxReveal>
             <BoxReveal boxColor={'#0371a4'} duration={0.5}>
               <button className="py-4 px-6 border-[#0371a4] border-[3px] rounded-[1.5rem] font-semibold text-[#0371a4] font-jetbrains transition-all duration-500 hover:scale-90 hover:bg-[#0371a4] hover:text-white" onClick={() => navigate('/miembros')}>
