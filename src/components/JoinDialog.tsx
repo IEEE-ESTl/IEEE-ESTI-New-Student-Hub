@@ -86,16 +86,26 @@ export default function JoinBranchDialog({
 
   const onSubmit = async (data: FormData) => {
     try {
-      console.log("Form submitted:", data)
-      // TODO: Send the data to your server
-      alert("¡Formulario enviado exitosamente!")
-      setOpen(false)
-      form.reset()
+      const response = await fetch('/api/send', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error);
+      }
+
+      console.log('Solicitud de unión enviada correctamente:', result);
+      alert('Solicitud de unión enviada correctamente');
+      setOpen(false);
+      form.reset();
     } catch (error) {
-      console.error("Error submitting form:", error)
-      alert("Error al enviar el formulario. Por favor intenta de nuevo.")
+      console.error('Error al enviar la solicitud:', error);
+      alert('Error al enviar la solicitud. Por favor intenta de nuevo.');
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
