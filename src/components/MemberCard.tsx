@@ -5,7 +5,8 @@ import { useState } from "react";
 import Image, { StaticImageData } from "next/image";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { Terminal, Brush, HandCoins } from "lucide-react";
-import ieeeIcon from '@/assets/academicons--ieee.svg'
+import ieeeIcon from '@/assets/academicons--ieee-black.svg'
+import ieeeWhiteIcon from '@/assets/academicons--ieee.svg'
 
 const IEEEIcon = ({ className }: { className?: string }) => (
   <Image 
@@ -16,6 +17,16 @@ const IEEEIcon = ({ className }: { className?: string }) => (
     className='text-white'
   />
 );
+
+const IEEEWhiteIcon = ({ className }: { className?: string }) => (
+  <Image
+    src={ieeeWhiteIcon}
+    alt="IEEE"
+    width={24}
+    height={24}
+    className='text-white'
+  />
+)
 
 interface Badge {
     name: string
@@ -37,6 +48,7 @@ const iconMap = {
     brush: Brush,
     handCoins: HandCoins,
     ieee: IEEEIcon,
+    ieeeWhite: IEEEWhiteIcon,
 }
 
 interface BadgeProps {
@@ -74,7 +86,7 @@ const MemberCard = ({ member }: { member: Member }) => {
                 <div className="flex flex-grow gap-2 items-center">
                   <div className="flex flex-col">
                     <h3 className="text-sm text-white font-semibold">{member.name}</h3>
-                    <p className="text-xs text-white/60">Miembro desde {member.date}</p>
+                    <p className="text-xs text-white/60">{member.date}</p>
                   </div>
                 </div>
                 
