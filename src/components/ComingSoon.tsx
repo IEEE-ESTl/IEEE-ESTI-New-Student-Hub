@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react"
 import { Calendar, MapPin, User, X } from "lucide-react"
 import { Button } from "./ui/button"
-import { Badge } from "./ui/badge"
 import { BlurFade } from "./magicui/blur-fade"
+import { Badge } from "./ui/badge"
 import { bebasNeue, jetBrainsMono, montserrat } from "@/lib/fonts";
 
-interface Event {
+interface Card {
     id: number
     title: string
     description: string
@@ -17,54 +17,45 @@ interface Event {
     category: string
     instructor: string
     image: string
+    registerLink: string
 }
 
-const events: Event[] = [
+const cards: Card[] = [
     {
         id: 1,
-        title: "Taller de Git y Github",
-        description: "Taller donde se aprendieron los fundamentos de Git y Github",
-        fullDescription: "En este taller se aprendieron los fundamentos de Git y Github, una herramienta de control de versiones de código abierto, este taller fue de mucha utilidad para aquellos estudiantes que estaban interesados en aprender a programar y a crear sus propias aplicaciones.",
-        date: "16 de febrero de 2024",
+        title: "Taller de React y Tailwind",
+        description: "Aprende los fundamentos de React y Tailwind para crear aplicaciones web modernas y responsivas.",
+        fullDescription: "En este taller, aprenderás los fundamentos de React y Tailwind para crear aplicaciones web modernas y responsivas. Aprenderás a crear componentes reutilizables, a manejar el estado de la aplicación y a crear interfaces de usuario atractivas.",
+        date: "26 de septiembre de 2025",
         location: "Escuela Superior de Tlahuelilpan",
         category: "Taller",
-        instructor: "Johan González",
-        image: "/tallerGit.webp",
+        instructor: "Paulo Mantilla",
+        image: "/flyer-1.png",
+        registerLink: "https://www.google.com"
     },
     {
         id: 2,
-        title: "Frontend Hackathon",
-        description: "Hackathon donde se desarrolló una aplicación web de recetario",
-        fullDescription: "En este hackathon se desarrolló una aplicación web de recetario utilizando el framework de tu preferencia, fue una gran oportunidad para que los estudiantes pusieran a prueba sus habilidades de desarrollo web.",
-        date: "24 de febrero de 2024",
-        location: "Escuela Superior de Tlahuelilpan",
-        category: "Hackathon",
-        instructor: "Erick Medel",
-        image: "/hackathon-frontend.jpeg",
-    },
-    {
-        id: 3,
-        title: "Taller de PostgreSQL",
-        description: "Taller donde se aprendieron los fundamentos de PostgreSQL",
-        fullDescription: "En este taller se aprendieron los fundamentos de PostgreSQL, una base de datos relacional de código abierto, este taller fue de mucha utilidad para aquellos estudiantes que estaban interesados en aprender a programar y a crear sus propias bases de datos.",
-        date: "12 de marzo de 2024",
+        title: "Primeros pasos: Impresión 3D",
+        description: "Aprende los fundamentos de la impresión 3D y cómo usarlo para crear tus propios proyectos.",
+        fullDescription: "En este taller, aprenderás los fundamentos de la impresión 3D y cómo usarlo para crear tus propios proyectos. Aprenderás a crear modelos en 3D, a imprimirlos y a usarlos para crear tus propios proyectos.",
+        date: "26 de septiembre de 2025",
         location: "Escuela Superior de Tlahuelilpan",
         category: "Taller",
-        instructor: "Ángel Enrique Romero Cuevas",
-        image: "/tallerSql.webp",
+        instructor: "Mario Lozano",
+        image: "/flyer-2.png",
+        registerLink: "https://www.google.com"
     }
 ]
 
-export default function Events() {
-    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+export default function ComingSoon() {
+    const [selectedCard, setSelectedCard] = useState<Card | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
 
-    const openModal = (event: Event) => {
-        setSelectedEvent(event);
+    const openModal = (card: Card) => {
+        setSelectedCard(card);
         setIsModalOpen(true);
-        // Retraso que permite que el modal se muestre animado
         setTimeout(() => {
             setIsAnimating(true);
         }, 10);
@@ -74,11 +65,51 @@ export default function Events() {
         setIsAnimating(false);
         setIsClosing(true);
         setTimeout(() => {
-            setSelectedEvent(null);
+            setSelectedCard(null);
             setIsModalOpen(false);
             setIsClosing(false);
         }, 300); 
     }
+
+        // Cerrar modal con la tecla ESC
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        };
+
+        if (isModalOpen) {
+            document.addEventListener('keydown', handleEscape);
+            // Prevenir el scroll del body cuando el modal está abierto
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.body.style.overflow = 'unset';
+        };
+    }, [isModalOpen]);
+
+        // Cerrar modal con la tecla ESC
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        };
+
+        if (isModalOpen) {
+            document.addEventListener('keydown', handleEscape);
+            // Prevenir el scroll del body cuando el modal está abierto
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.body.style.overflow = 'unset';
+        };
+    }, [isModalOpen]);
 
     // Cerrar modal con la tecla ESC
     useEffect(() => {
@@ -114,56 +145,56 @@ export default function Events() {
     }
 
     return (
-        <section className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8" id="events">
+        <section className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8" id="coming-soon">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-12">
-                    <h1 className={`${bebasNeue.className} font-bold text-[#0371a4] text-center text-7xl lg:text-8xl xl:text-9xl`}>Eventos</h1>
+                    <h1 className={`${bebasNeue.className} font-bold text-[#0371a4] text-center text-7xl lg:text-8xl xl:text-9xl`}>Próximamente</h1>
                 </div>
 
                 {/* Grid de eventos */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {events.map((event, idx) => (
+                    {cards.map((card, idx) => (
                         <BlurFade 
                             delay={0.15 + idx * 0.05} 
                             inView 
-                            key={event.id}
+                            key={card.id}
                         >
                             
                         
                         <div
-                            key={event.id}
+                            key={card.id}
                             className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden"
-                            onClick={() => openModal(event)}
+                            onClick={() => openModal(card)}
                         >
                             <div className="relative">
                                 <img
-                                    src={event.image}
-                                    alt={event.title}
+                                    src={card.image}
+                                    alt={card.title}
                                     className="w-full h-48 object-cover"
                                 />
                                 <Badge
-                                    className={`absolute top-4 left-4 ${getCategoryColor(event.category)}`}
+                                    className={`absolute top-4 left-4 ${getCategoryColor(card.category)}`}
                                 >
-                                    {event.category}
+                                    {card.category}
                                 </Badge>
                             </div>
 
                             <div className={`${montserrat.className} p-6`}>
                                 <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2">
-                                    {event.title}
+                                    {card.title}
                                 </h3>
                                 <p className="text-gray-600 mb-4 line-clamp-3">
-                                    {event.description}
+                                    {card.description}
                                 </p>
                                 <div className="flex items-center text-sm text-gray-500 mb-4">
                                     <Calendar className="w-4 h-4 mr-2"/>
-                                    <span>{event.date}</span>
+                                    <span>{card.date}</span>
                                 </div>
                                 <Button
                                     className="w-full bg-[#0371a4] hover:bg-[#0371a4]/80 text-white"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        openModal(event);
+                                        openModal(card);
                                     }}
                                 >
                                     Ver más
@@ -175,7 +206,7 @@ export default function Events() {
                 </div>
 
                 {/* Modal de eventos */}
-                {selectedEvent && (
+                {selectedCard && (
                     <div 
                         className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all duration-300 ${
                             isAnimating && !isClosing ? 'opacity-100' : 'opacity-0'
@@ -202,23 +233,23 @@ export default function Events() {
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                                 <div className="relative">
                                     <img
-                                        src={selectedEvent.image}
-                                        alt={selectedEvent.title}
+                                        src={selectedCard.image}
+                                        alt={selectedCard.title}
                                         className="w-full h-64 lg:h-full object-cover lg:rounded-l-2xl"
                                     />
                                     <Badge
-                                        className={`absolute top-4 left-4 ${getCategoryColor(selectedEvent.category)}`}
+                                        className={`absolute top-4 left-4 ${getCategoryColor(selectedCard.category)}`}
                                     >
-                                        {selectedEvent.category}
+                                        {selectedCard.category}
                                     </Badge>
                                 </div>
 
                                 <div className="p-8">
                                     <h2 className={`${montserrat.className} text-3xl font-bold text-gray-900 mb-4`}>
-                                        {selectedEvent.title}
+                                        {selectedCard.title}
                                     </h2>
                                     <p className={`${jetBrainsMono.className} text-gray-600 mb-6 leading-relaxed`}>
-                                        {selectedEvent.fullDescription}
+                                        {selectedCard.fullDescription}
                                     </p>
 
                                     <div className="space-y-4 mb-8">
@@ -226,7 +257,7 @@ export default function Events() {
                                             <Calendar className="w-5 h-5 mr-2 text-blue-600"/>
                                             <div>
                                                 <div className="font-medium">
-                                                    {selectedEvent.date}
+                                                    {selectedCard.date}
                                                 </div>
                                             </div>
                                         </div>
@@ -235,7 +266,7 @@ export default function Events() {
                                             <MapPin className="w-5 h-5 mr-2 text-red-500"/>
                                             <div>
                                                 <div className="font-medium">
-                                                    {selectedEvent.location}
+                                                    {selectedCard.location}
                                                 </div>
                                             </div>
                                         </div>
@@ -244,9 +275,19 @@ export default function Events() {
                                             <User className="w-5 h-5 mr-2 text-green-600"/>
                                             <div>
                                                 <div className="font-medium">
-                                                    {selectedEvent.instructor}
+                                                    {selectedCard.instructor}
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        <div className="flex justify-center items-center">
+                                            <Button
+                                                className="bg-[#0371a4] hover:bg-[#0371a4]/80 text-white w-full cursor-pointer mt-5"
+                                                disabled={true}
+                                                onClick={() => window.open(selectedCard.registerLink, '_blank')}
+                                            >
+                                                Link de registro disponible pronto
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>
@@ -257,4 +298,6 @@ export default function Events() {
             </div>
         </section>
     )
+    
+
 }

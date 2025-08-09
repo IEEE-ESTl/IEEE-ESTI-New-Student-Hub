@@ -1,5 +1,6 @@
 import johan from '@/assets/memberImages/johan.webp';
 import erick from '@/assets/memberImages/ErickMedelGalindo.webp';
+import valeri from '@/assets/memberImages/valeri.webp';
 
 export const exMembers = [
     {
@@ -39,6 +40,20 @@ export const exMembers = [
                 name: 'Tesorero',
                 description: 'Fue tesorero de la rama',
                 icon: 'handCoins',
+                color: 'bg-black',
+                iconColor: 'text-white',
+            }
+        ]
+    },
+    {
+        name: 'Valeri Marmolejo',
+        date: 'Fue miembro desde 2024 hasta 2025',
+        image: valeri,
+        badges: [
+            {
+                name: 'Marketing',
+                description: 'Fue la encargada de promocionar la comunidad y sus actividades',
+                icon: 'marketing',
                 color: 'bg-black',
                 iconColor: 'text-white',
             }

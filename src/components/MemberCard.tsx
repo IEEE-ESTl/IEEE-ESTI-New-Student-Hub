@@ -4,7 +4,7 @@ import { Card} from "./ui/card";
 import { useState } from "react";
 import Image, { StaticImageData } from "next/image";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-import { Terminal, Brush, HandCoins } from "lucide-react";
+import { Terminal, Brush, HandCoins, MessageSquareHeart } from "lucide-react";
 import ieeeIcon from '@/assets/academicons--ieee-black.svg'
 import ieeeWhiteIcon from '@/assets/academicons--ieee.svg'
 
@@ -49,6 +49,7 @@ const iconMap = {
     handCoins: HandCoins,
     ieee: IEEEIcon,
     ieeeWhite: IEEEWhiteIcon,
+    marketing: MessageSquareHeart,
 }
 
 interface BadgeProps {
@@ -96,7 +97,7 @@ const MemberCard = ({ member }: { member: Member }) => {
                       <TooltipTrigger asChild>
                         <div className="cursor-pointer">
                           <Badge
-                            icon={badge.icon as "terminal" | "brush" | "handCoins" | "ieee"}
+                            icon={badge.icon as "terminal" | "brush" | "handCoins" | "ieee" | "marketing"}
                             color={badge.color}
                             iconColor={badge.iconColor}
                           />

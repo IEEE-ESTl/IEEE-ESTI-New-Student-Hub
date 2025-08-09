@@ -1,7 +1,7 @@
 import Image from "next/image";
-import image_a from '@/assets/image-home-1.avif';
-import image_b from '@/assets/tallerGit.avif';
-import image_c from '@/assets/tallerSql.avif';
+import image_a from '@/assets/image-home-1.webp';
+import image_b from '@/assets/tallerGit.webp';
+import image_c from '@/assets/tallerSql.webp';
 import { bebasNeue, jetBrainsMono } from "@/lib/fonts";
 import { Button } from "@/components/ui/button";
 import JoinDialog from "./JoinDialog";
