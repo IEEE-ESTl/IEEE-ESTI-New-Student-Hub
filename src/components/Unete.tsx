@@ -76,7 +76,7 @@ const Card: React.FC<CardData> = ({ title, description, hoverClass }) => {
 
 export const Unete: React.FC = () => {
     return (
-        <section className="flex flex-col items-center justify-center mt-5 lg:-mt-10" id="join">
+        <section className="flex flex-col items-center justify-center mt-5 " id="join">
             <div className="w-full max-w-6xl mx-auto px-4">
                 <h1 className={`${bebasNeue.className} font-bold text-[#0371a4] text-center text-7xl lg:text-8xl xl:text-9xl`}>
                     ÚNETE
