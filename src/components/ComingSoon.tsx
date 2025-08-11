@@ -17,12 +17,23 @@ interface Card {
     category: string
     instructor: string
     image: string
-    registerLink: string
+    registerLink?: string
 }
 
 const cards: Card[] = [
     {
         id: 1,
+        title: "Welcome Back",
+        description: "Prepárate para un evento lleno de sorpresas, oportunidades y mucha actitud.",
+        fullDescription: "En este evento, podrás reecontrarte con tus amigos, conocer nuevos compañeros y arrancar el semestre con toda la energía.",
+        date: "14 de agosto de 2025",
+        location: "Auditorio de la ESTl",
+        category: "Evento",
+        instructor: "IEEE ESTl Student Branch",
+        image: "/welcomeback.jpeg",
+    },
+    {
+        id: 2,
         title: "Taller de React y Tailwind",
         description: "Aprende los fundamentos de React y Tailwind para crear aplicaciones web modernas y responsivas.",
         fullDescription: "En este taller, aprenderás los fundamentos de React y Tailwind para crear aplicaciones web modernas y responsivas. Aprenderás a crear componentes reutilizables, a manejar el estado de la aplicación y a crear interfaces de usuario atractivas.",
@@ -34,7 +45,7 @@ const cards: Card[] = [
         registerLink: "https://www.google.com"
     },
     {
-        id: 2,
+        id: 3,
         title: "Primeros pasos: Impresión 3D",
         description: "Aprende los fundamentos de la impresión 3D y cómo usarlo para crear tus propios proyectos.",
         fullDescription: "En este taller, aprenderás los fundamentos de la impresión 3D y cómo usarlo para crear tus propios proyectos. Aprenderás a crear modelos en 3D, a imprimirlos y a usarlos para crear tus propios proyectos.",
@@ -135,7 +146,7 @@ export default function ComingSoon() {
         switch (category.toLowerCase()) {
           case 'taller':
             return 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-          case 'conference':
+          case 'evento':
             return 'bg-purple-100 text-purple-800 hover:bg-purple-200'
           case 'hackathon':
             return 'bg-green-100 text-green-800 hover:bg-green-200'
@@ -280,6 +291,7 @@ export default function ComingSoon() {
                                             </div>
                                         </div>
 
+                                        {selectedCard.registerLink && (
                                         <div className="flex justify-center items-center">
                                             <Button
                                                 className="bg-[#0371a4] hover:bg-[#0371a4]/80 text-white w-full cursor-pointer mt-5"
@@ -289,6 +301,7 @@ export default function ComingSoon() {
                                                 Link de registro disponible pronto
                                             </Button>
                                         </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

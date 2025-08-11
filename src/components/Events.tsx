@@ -114,7 +114,7 @@ export default function Events() {
     }
 
     return (
-        <section className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8" id="events">
+        <section className="min-h-screen bg-white mb-10 px-4 sm:px-6 lg:px-8" id="events">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-12">
                     <h1 className={`${bebasNeue.className} font-bold text-[#0371a4] text-center text-7xl lg:text-8xl xl:text-9xl`}>Eventos</h1>
