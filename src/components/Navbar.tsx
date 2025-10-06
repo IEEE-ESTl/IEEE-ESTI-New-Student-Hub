@@ -29,9 +29,9 @@ export default function Navbar() {
                             </Link>
                             
                             
-                            <Link href={'/#coming-soon'} className={`${montserrat.className} text-black hover:scale-110 hover:text-[#035b98] px-3 py-2 rounded-md text-md font-medium transition-all duration-300`}>
+                            {/* <Link href={'/#coming-soon'} className={`${montserrat.className} text-black hover:scale-110 hover:text-[#035b98] px-3 py-2 rounded-md text-md font-medium transition-all duration-300`}>
                                 PRÓXIMAMENTE
-                            </Link>
+                            </Link> */}
                             
                             
                             <Link href={'/#join'} className={`${montserrat.className} text-black hover:scale-110 hover:text-[#035b98] px-3 py-2 rounded-md text-md font-medium transition-all duration-300`}>

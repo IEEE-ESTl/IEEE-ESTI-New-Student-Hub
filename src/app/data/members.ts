@@ -5,6 +5,7 @@ import abdiel from '@/assets/memberImages/abdiel.webp';
 import ivan from '@/assets/memberImages/ivan.webp';
 import malkhi from '@/assets/memberImages/malkhi.webp';
 import roberto from '@/assets/memberImages/roberto.webp';
+import { date } from 'zod';
 
 export const members = [
     {
