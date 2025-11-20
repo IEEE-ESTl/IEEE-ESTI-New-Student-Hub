@@ -15,7 +15,7 @@ export default function Home() {
     <>
       <Inicio />
       <Events />
-      {/* <ComingSoon /> */}
+      <ComingSoon />
       <Unete />
       <FAQ />
     </>

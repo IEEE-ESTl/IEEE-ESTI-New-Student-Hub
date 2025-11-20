@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import logo from '@/assets/logo.png';
 import { montserrat } from '@/lib/fonts';
+import Loginbutton from "./ui/login-button";
+
 
 export default function Navbar() {
     return (
@@ -29,14 +31,15 @@ export default function Navbar() {
                             </Link>
                             
                             
-                            {/* <Link href={'/#coming-soon'} className={`${montserrat.className} text-black hover:scale-110 hover:text-[#035b98] px-3 py-2 rounded-md text-md font-medium transition-all duration-300`}>
+                            <Link href={'/#coming-soon'} className={`${montserrat.className} text-black hover:scale-110 hover:text-[#035b98] px-3 py-2 rounded-md text-md font-medium transition-all duration-300`}>
                                 PRÓXIMAMENTE
-                            </Link> */}
-                            
+                            </Link>
+
                             
                             <Link href={'/#join'} className={`${montserrat.className} text-black hover:scale-110 hover:text-[#035b98] px-3 py-2 rounded-md text-md font-medium transition-all duration-300`}>
                                 ÚNETE
                             </Link>
+
 
                             <Link href={'/#faq'} className={`${montserrat.className} text-black hover:scale-110 hover:text-[#035b98] px-3 py-2 rounded-md text-md font-medium transition-all duration-300`}>
                                 FAQ
@@ -44,8 +47,9 @@ export default function Navbar() {
                         </div>
                     </div>
 
-                    {/* Social Media Icons */}
-                    <div className="flex items-center space-x-3">
+                    {/* Social Media Icons & SignIn */}
+                    <div className="flex items-center space-x-3">                        
+
                         <Link href={'https://www.instagram.com/ieee-estl'} target="_blank" className="text-black hover:-translate-y-1 px-2 py-1 transition-all duration-300">
                             <Instagram size={20}/>
                         </Link>
@@ -55,6 +59,8 @@ export default function Navbar() {
                         <Link href={'https://github.com/IEEE-ESTl/IEEE-ESTl-Student-Web-Hub'} target="_blank" className="text-black hover:-translate-y-1 px-2 py-1 transition-all duration-300">
                             <Github size={20}/>
                         </Link>
+
+                        <Loginbutton />
 
                     </div>
 

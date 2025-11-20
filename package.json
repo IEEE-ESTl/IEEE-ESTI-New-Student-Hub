@@ -10,6 +10,7 @@
     "preview": "next build && next start"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.35.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-dialog": "^1.1.15",
