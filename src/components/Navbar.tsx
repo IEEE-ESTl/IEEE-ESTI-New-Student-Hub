@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import logo from '@/assets/logo.png';
 import { montserrat } from '@/lib/fonts';
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { Button } from "./ui/button";
 
 export default function Navbar() {
     return (
@@ -23,17 +25,17 @@ export default function Navbar() {
                                 INICIO
                             </Link>
 
-                            
+
                             <Link href={'/#events'} className={`${montserrat.className} text-black hover:scale-110 hover:text-[#035b98] px-3 py-2 rounded-md text-md font-medium transition-all duration-300`}>
                                 EVENTOS
                             </Link>
-                            
-                            
-                            {/* <Link href={'/#coming-soon'} className={`${montserrat.className} text-black hover:scale-110 hover:text-[#035b98] px-3 py-2 rounded-md text-md font-medium transition-all duration-300`}>
+
+
+                            <Link href={'/#coming-soon'} className={`${montserrat.className} text-black hover:scale-110 hover:text-[#035b98] px-3 py-2 rounded-md text-md font-medium transition-all duration-300`}>
                                 PRÓXIMAMENTE
-                            </Link> */}
-                            
-                            
+                            </Link>
+
+
                             <Link href={'/#join'} className={`${montserrat.className} text-black hover:scale-110 hover:text-[#035b98] px-3 py-2 rounded-md text-md font-medium transition-all duration-300`}>
                                 ÚNETE
                             </Link>
@@ -47,15 +49,26 @@ export default function Navbar() {
                     {/* Social Media Icons */}
                     <div className="flex items-center space-x-3">
                         <Link href={'https://www.instagram.com/ieee-estl'} target="_blank" className="text-black hover:-translate-y-1 px-2 py-1 transition-all duration-300">
-                            <Instagram size={20}/>
+                            <Instagram size={20} />
                         </Link>
                         <Link href={'https://www.linkedin.com/company/ieee-estl'} target="_blank" className="text-black hover:-translate-y-1 px-2 py-1 transition-all duration-300">
-                            <Linkedin size={20}/>
+                            <Linkedin size={20} />
                         </Link>
                         <Link href={'https://github.com/IEEE-ESTl/IEEE-ESTl-Student-Web-Hub'} target="_blank" className="text-black hover:-translate-y-1 px-2 py-1 transition-all duration-300">
-                            <Github size={20}/>
+                            <Github size={20} />
                         </Link>
-
+                        <div className="md:ml-4">
+                            <SignedOut>
+                                <SignInButton mode="modal">
+                                    <Button variant="primary" size="sm">
+                                        Iniciar Sesión
+                                    </Button>
+                                </SignInButton>
+                            </SignedOut>
+                            <SignedIn>
+                                <UserButton />
+                            </SignedIn>
+                        </div>
                     </div>
 
                 </div>

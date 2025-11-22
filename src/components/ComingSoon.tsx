@@ -23,29 +23,17 @@ interface Card {
 const cards: Card[] = [
 
     {
-        id: 2,
-        title: "Taller de React y Tailwind",
-        description: "Aprende los fundamentos de React y Tailwind para crear aplicaciones web modernas y responsivas.",
-        fullDescription: "En este taller, aprenderás los fundamentos de React y Tailwind para crear aplicaciones web modernas y responsivas. Aprenderás a crear componentes reutilizables, a manejar el estado de la aplicación y a crear interfaces de usuario atractivas.",
-        date: "26 de septiembre de 2025",
-        location: "Escuela Superior de Tlahuelilpan",
-        category: "Taller",
-        instructor: "Paulo Mantilla",
-        image: "/flyer-1.png",
-        registerLink: "/register-workshop"
+        id: 1,
+        title: "Hackathon Frontend",
+        description: "Únete a nuestro hackathon de frontend y demuestra tus habilidades al crear increíbles interfaces de usuario para una web de peliculas!.",
+        fullDescription: "Aprende nuevas tecnologías y compite por premios emocionantes mientras desarrollas soluciones creativas para mejorar la experiencia del usuario. Tu misión será diseñar una interfaz de usuario que sea atractiva, intuitiva y funcional.",
+        date: "28 de noviembre de 2025",
+        location: "Online",
+        category: "Hackathon",
+        instructor: "Equipo IEEE ESTl",
+        image: "/hackathon-frontend-2025.webp",
+        registerLink: "/register-event"
     },
-    {
-        id: 3,
-        title: "Primeros pasos: Impresión 3D",
-        description: "Aprende los fundamentos de la impresión 3D y cómo usarlo para crear tus propios proyectos.",
-        fullDescription: "En este taller, aprenderás los fundamentos de la impresión 3D y cómo usarlo para crear tus propios proyectos. Aprenderás a crear modelos en 3D, a imprimirlos y a usarlos para crear tus propios proyectos.",
-        date: "26 de septiembre de 2025",
-        location: "Escuela Superior de Tlahuelilpan",
-        category: "Taller",
-        instructor: "Mario Lozano",
-        image: "/flyer-2.png",
-        registerLink: "/register-workshop"
-    }
 ]
 
 export default function ComingSoon() {
@@ -286,7 +274,7 @@ export default function ComingSoon() {
                                             <Button
                                                 className="bg-[#0371a4] hover:bg-[#0371a4]/80 text-white w-full cursor-pointer mt-5"
                                                 disabled={false}
-                                                onClick={() => window.open(selectedCard.registerLink, '_blank')}
+                                                onClick={() => window.open(selectedCard.registerLink)}
                                             >
                                                 Registrate aquí
                                             </Button>
