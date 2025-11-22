@@ -1,7 +1,6 @@
 import { RegistrationForm } from "@/components/registration-form"
 import { montserrat, bebasNeue } from "@/lib/fonts"
 
-export const runtime = 'edge'
 
 export default function RegisterWorkshopPage() {
     return (
