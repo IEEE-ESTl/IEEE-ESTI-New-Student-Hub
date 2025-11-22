@@ -5,6 +5,8 @@ import {
 } from '@clerk/nextjs'
 import Navbar from "@/components/Navbar";
 
+export const runtime = 'edge'
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
