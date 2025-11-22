@@ -1,6 +1,8 @@
 import { RegistrationForm } from "@/components/registration-form"
 import { montserrat, bebasNeue } from "@/lib/fonts"
 
+export const runtime = 'edge'
+
 export default function RegisterWorkshopPage() {
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-8 lg:py-12 mt-20">

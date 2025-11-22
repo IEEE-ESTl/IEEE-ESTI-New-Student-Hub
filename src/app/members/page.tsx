@@ -6,6 +6,8 @@ import MemberCard from "@/components/MemberCard";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import type { Metadata } from "next";
 
+export const runtime = 'edge'
+
 export const metadata: Metadata = {
     title: "IEEE ESTl | Miembros",
     description: "IEEE ESTl | Miembros",
