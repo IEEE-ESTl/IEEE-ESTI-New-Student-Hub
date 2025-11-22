@@ -4,6 +4,8 @@ import { WebhookEvent } from '@clerk/nextjs/server'
 import { supabase } from '@/config/supabaseClient'
 import { NextResponse } from 'next/server'
 
+export const runtime = 'edge'
+
 export async function POST(req: Request) {
   // 1. Obtener el secreto del dashboard de Clerk
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
