@@ -123,10 +123,9 @@ export function RegistrationForm() {
             if (error) throw error
 
             // Éxito
-            setIsSubmitted(true)
+            setIsSubmitted(true)          
 
             // Reset automático
-            setIsSubmitted(false)
             setFormData({ fullName: "", email: "", phone: "", group: "", eventId: "" })
             setErrors({})
             setTouched({})
@@ -221,9 +220,13 @@ export function RegistrationForm() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="101">101</SelectItem>
+                                    <SelectItem value="102">102</SelectItem>
                                     <SelectItem value="301">301</SelectItem>
+                                    <SelectItem value="302">302</SelectItem>
                                     <SelectItem value="501">501</SelectItem>
+                                    <SelectItem value="502">502</SelectItem>
                                     <SelectItem value="701">701</SelectItem>
+                                    <SelectItem value="702">702</SelectItem>
                                     <SelectItem value="external">Externo</SelectItem>
                                 </SelectContent>
                             </Select>
