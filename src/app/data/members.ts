@@ -85,6 +85,7 @@ export const members = [
             }
         ]
     },
+    /*
     {
         name: 'Roberto Angel',
         date: 'Miembro desde 2025',
@@ -98,5 +99,5 @@ export const members = [
                 iconColor: 'text-white',
             }
         ]
-    }
+    } */
 ]

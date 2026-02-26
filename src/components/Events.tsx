@@ -118,6 +118,17 @@ const events: Event[] = [
         category: "Taller",
         instructor: "Mario Lozano",
         image: "/taller3D.webp",
+    },
+    {
+        id: 10,
+        title: "Hackathon Frontend",
+        description: "Únete a nuestro hackathon de frontend y demuestra tus habilidades al crear increíbles interfaces de usuario para una web de peliculas!.",
+        fullDescription: "Aprende nuevas tecnologías y compite por premios emocionantes mientras desarrollas soluciones creativas para mejorar la experiencia del usuario. Tu misión será diseñar una interfaz de usuario que sea atractiva, intuitiva y funcional.",
+        date: "28 de noviembre de 2025",
+        location: "Online",
+        category: "Hackathon",
+        instructor: "Equipo IEEE ESTl",
+        image: "/hackathon-frontend-2025.webp",
     }
 ]
 
