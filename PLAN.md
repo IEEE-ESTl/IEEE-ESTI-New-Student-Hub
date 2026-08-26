@@ -56,11 +56,11 @@ secretos, y no hay `.dev.vars` local.
 
 Consecuencias verificadas:
 
-- **El proyecto no compila hoy.** `src/config/supabaseClient.ts` y `src/app/api/send/route.ts`
-  inicializan sus clientes en scope de módulo (`createClient(...)`, `new Resend(...)`), así que
-  `next build` truena al recolectar páginas: *"supabaseUrl is required"* y *"Missing API key"*.
-  Son los **únicos dos** archivos que leen `process.env`, y ambos se eliminan en la Fase 3 — que
-  por lo tanto arregla el build como efecto secundario.
+- **El proyecto no compilaba** al escribirse este documento: `src/config/supabaseClient.ts` y
+  `src/app/api/send/route.ts` inicializaban sus clientes en scope de módulo, y `next build`
+  tronaba con *"supabaseUrl is required"* y *"Missing API key"*. Ambos archivos se eliminaron en
+  la Fase 3. El build sigue necesitando `NEXT_PUBLIC_CONVEX_URL`, pero ahora falla con un mensaje
+  accionable (ver *Efecto sobre el build* en la Fase 3).
 - **El sitio está fuera de línea.** `ieee-estl.com` no está pagado ni configurado. El último
   commit en `main` es del **2026-02-26**. No hay nada desplegado que se pueda romper.
 - **Los tres formularios están muertos**, y no hay datos que rescatar: nadie conserva acceso al
@@ -390,12 +390,26 @@ Lo que sí se prepara aquí, para que la Fase 7 sea un cambio de configuración 
 8. `chore(deps): drop supabase and unused react-email`
    → `package.json`, `bun.lock`
 
-### Efecto secundario: arregla el build
+### Efecto sobre el build
 
-Al eliminar `supabaseClient.ts` y `/api/send/route.ts` desaparecen las dos únicas lecturas de
-`process.env` en scope de módulo, que son las que hoy impiden compilar el proyecto sin variables
-de entorno. A partir de esta fase, `bun run build` funciona en un clon limpio sin configurar nada,
-y `main` vuelve a ser desplegable.
+Al eliminar `supabaseClient.ts` y `/api/send/route.ts` desaparecen las lecturas de `process.env`
+de Supabase y Resend, que impedían compilar.
+
+**Corrección a lo que decía antes este documento:** afirmé que a partir de esta fase el build
+funcionaría "en un clon limpio sin configurar nada". Es falso, y se verificó. El build sigue
+exigiendo `NEXT_PUBLIC_CONVEX_URL`, porque `ConvexClientProvider` la necesita y Next incrusta las
+variables `NEXT_PUBLIC_*` en tiempo de build.
+
+La diferencia real es otra, y sí importa:
+
+- **Antes:** el build fallaba por una integración muerta, con un mensaje críptico
+  (`supabaseUrl is required`) y ninguna forma de saber qué variable faltaba ni de dónde sacarla.
+- **Ahora:** falla por una dependencia viva, con un mensaje que dice qué correr
+  (`Falta NEXT_PUBLIC_CONVEX_URL. Corre bunx convex dev...`), y la variable se regenera sola
+  contra la cuenta de Convex.
+
+Se dejó a propósito que falle fuerte en lugar de compilar y producir un sitio que no guarda nada.
+Para desplegar en Cloudflare hay que cargar `NEXT_PUBLIC_CONVEX_URL` en el entorno de build.
 
 ### Lo que necesito de ti
 
