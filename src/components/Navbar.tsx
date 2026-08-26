@@ -3,8 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 import logo from '@/assets/logo.png';
 import { montserrat } from '@/lib/fonts';
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { Button } from "./ui/button";
 
 export default function Navbar() {
     return (
@@ -57,18 +55,6 @@ export default function Navbar() {
                         <Link href={'https://github.com/IEEE-ESTl/IEEE-ESTl-Student-Web-Hub'} target="_blank" className="text-black hover:-translate-y-1 px-2 py-1 transition-all duration-300">
                             <Github size={20} />
                         </Link>
-                        <div className="md:ml-4">
-                            <SignedOut>
-                                <SignInButton mode="modal">
-                                    <Button variant="primary" size="sm">
-                                        Iniciar Sesión
-                                    </Button>
-                                </SignInButton>
-                            </SignedOut>
-                            <SignedIn>
-                                <UserButton />
-                            </SignedIn>
-                        </div>
                     </div>
 
                 </div>
