@@ -36,6 +36,40 @@ Resueltas antes de empezar. Quedan registradas aquí para no volver a abrirlas a
 | 4 | ¿Se evitan respuestas duplicadas? | **Sí.** Doble barrera: marca en `localStorage` + verificación en el servidor por nombre + grupo (ver Fase 4). |
 | 5 | ¿El dashboard permite borrar? | **No. Solo lectura.** |
 | 6 | ¿Cuándo se actualiza el dominio de Resend? | **Al final (Fase 7).** `ieee-estl.com` aún no está configurado y el correo destinatario no está definido. |
+| 7 | ¿Se arregla el build roto antes de la Fase 3? | **No.** Se espera a la Fase 3, que lo arregla al eliminar los archivos culpables. `main` queda sin poder desplegarse hasta entonces. |
+
+---
+
+## Estado del entorno (verificado el 2026-08-26)
+
+**Ya no existe ninguna variable de entorno del proyecto.** Las de Clerk, Supabase y Resend
+dejaron de existir y nadie del equipo las conserva. `wrangler.jsonc` no declara variables ni
+secretos, y no hay `.dev.vars` local.
+
+Consecuencias verificadas:
+
+- **El proyecto no compila hoy.** `src/config/supabaseClient.ts` y `src/app/api/send/route.ts`
+  inicializan sus clientes en scope de módulo (`createClient(...)`, `new Resend(...)`), así que
+  `next build` truena al recolectar páginas: *"supabaseUrl is required"* y *"Missing API key"*.
+  Son los **únicos dos** archivos que leen `process.env`, y ambos se eliminan en la Fase 3 — que
+  por lo tanto arregla el build como efecto secundario.
+- **Los tres formularios ya están muertos**, o corriendo sobre el build de febrero. El último
+  commit en `main` es del **2026-02-26**.
+- **`main` no es desplegable hasta la Fase 3.** Las fases 1 y 2 pueden mergearse como código,
+  pero no tiene sentido intentar un deploy antes.
+
+### Sobre las claves "perdidas"
+
+Hay que distinguir dos casos:
+
+- `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` — el prefijo `NEXT_PUBLIC_` hace
+  que Next las **incruste en el bundle del navegador** en tiempo de build. Si el sitio de febrero
+  sigue en línea, siguen siendo legibles por cualquiera. No están perdidas: están públicas, y
+  siempre lo estuvieron. Toda la protección dependía de las políticas RLS de Supabase.
+- `RESEND_API_KEY` y las de Clerk — server-side. Esas sí se perdieron.
+
+Lo que decide si los datos históricos se rescatan no es la anon key, sino **si alguien conserva
+acceso al panel de Supabase**. Pregunta abierta (ver Fase 3).
 
 **Consecuencia de la decisión 1 que conviene tener presente:** con una sola cuenta compartida no
 hay trazabilidad de quién entró ni quién exportó datos, y rotar la contraseña obliga a avisar a
@@ -73,11 +107,15 @@ usuarios y dejar solo el inicio de sesión.
 
 ## Orden de ejecución
 
-El orden **no** es el mismo en que se listaron las implementaciones, por una razón concreta:
-si se elimina Supabase antes de que Convex exista, los tres formularios del sitio quedan rotos
-en producción. Por eso **primero se levanta Convex, luego se migran los formularios, y hasta
-entonces se elimina el stack viejo**. Clerk sí puede salir de inmediato porque hoy no protege
+El orden **no** es el mismo en que se listaron las implementaciones: **primero se levanta Convex,
+luego se migran los formularios, y hasta entonces se elimina el stack viejo.** No se puede borrar
+la capa de datos antes de tener la que la reemplaza. Clerk sí sale de inmediato porque no protege
 ninguna ruta.
+
+> **Corrección.** La primera versión de este plan justificaba el orden diciendo que borrar
+> Supabase antes rompería los formularios en producción. Eso resultó falso: sin variables de
+> entorno, los formularios **ya están rotos** (ver *Estado del entorno*). El orden se sostiene por
+> la razón de arriba, pero no hay nada que proteger ni urgencia por llegar a la Fase 3.
 
 ```
 Fase 1  →  Eliminar Clerk                      feat/remove-clerk
@@ -229,8 +267,12 @@ migrar nada real.
 - Ejecutar `bunx convex dev` tú mismo (el login es interactivo y va ligado a tu cuenta).
 - Confirmar el nombre del proyecto en Convex.
 - **Decisión:** ¿migramos los datos históricos que ya existen en Supabase (registros previos de
-  talleres/eventos), o arrancamos Convex desde cero? Si hay que migrarlos, necesito un export
-  CSV de esas tablas.
+  talleres/eventos), o arrancamos Convex desde cero? Si hay que migrarlos, necesito un export CSV
+  de esas tablas — lo cual depende de que alguien conserve acceso al panel de Supabase, que a hoy
+  está sin confirmar.
+
+> `bunx convex dev` no depende del build de Next, así que esta fase se puede completar y verificar
+> aunque `bun run build` siga fallando. El build se arregla en la Fase 3.
 
 ---
 
@@ -320,11 +362,21 @@ Lo que sí se prepara aquí, para que la Fase 7 sea un cambio de configuración 
 8. `chore(deps): drop supabase and unused react-email`
    → `package.json`, `bun.lock`
 
+### Efecto secundario: arregla el build
+
+Al eliminar `supabaseClient.ts` y `/api/send/route.ts` desaparecen las dos únicas lecturas de
+`process.env` en scope de módulo, que son las que hoy impiden compilar el proyecto sin variables
+de entorno. A partir de esta fase, `bun run build` funciona en un clon limpio sin configurar nada,
+y `main` vuelve a ser desplegable.
+
 ### Lo que necesito de ti
 
-- La **API key de Resend** vigente — no me la pegues en el chat: la cargas tú con
+- **¿Alguien conserva acceso al panel de Supabase?** Decide si los registros históricos de
+  talleres y eventos se rescatan o se dan por perdidos.
+- **¿Alguien conserva acceso a la cuenta de Resend?** Si no, hay que crear una nueva y generar
+  una API key.
+- La **API key de Resend** — no me la pegues en el chat: la cargas tú con
   `bunx convex env set RESEND_API_KEY <valor>` cuando lleguemos a este punto.
-- Confirmar que las tablas de Supabase pueden quedar en solo lectura / archivarse.
 
 > **Nota:** mientras `ieee-estl.com` no esté verificado en Resend, el envío fallará en producción
 > aunque el código esté correcto. Para probar esta fase se puede usar la dirección de pruebas
