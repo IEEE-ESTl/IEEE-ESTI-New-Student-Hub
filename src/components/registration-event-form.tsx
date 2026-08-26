@@ -11,6 +11,7 @@ import { CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { montserrat } from "@/lib/fonts"
 import { useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
+import { opcionesDeRegistro } from "@/app/data/comingSoon"
 
 interface FormData {
     nombreCompleto: string
@@ -39,7 +40,13 @@ export function RegistrationForm() {
 
     const [errors, setErrors] = useState<FormErrors>({})
     const [touched, setTouched] = useState<Record<string, boolean>>({})
-    const [isRegistrationClosed, setIsRegistrationClosed] = useState(true)
+
+    // Las opciones salen de los datos del evento, no de una lista escrita aqui.
+    // Si no hay ninguna con inscripcion abierta, el registro esta cerrado: no
+    // existe un interruptor aparte que se pueda quedar desincronizado.
+    const opciones = opcionesDeRegistro()
+    const registroCerrado = opciones.length === 0
+
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
     const [errorEnvio, setErrorEnvio] = useState<string | null>(null)
@@ -151,7 +158,7 @@ export function RegistrationForm() {
 
     // --- UI: FORMULARIO ---
     return (
-        isRegistrationClosed ? (
+        registroCerrado ? (
             <Card className="shadow-lg border-t-4 border-destructive">
                 <CardContent className="pt-6 text-center py-8">
                     <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
@@ -178,7 +185,11 @@ export function RegistrationForm() {
                                     <SelectValue placeholder="-- Elige un evento --" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="hackathon-frontend">Hackathon Frontend</SelectItem>
+                                    {opciones.map((opcion) => (
+                                        <SelectItem key={opcion.valor} value={opcion.valor}>
+                                            {opcion.etiqueta}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                             {errors.evento && <p className="text-xs text-destructive">{errors.evento}</p>}
