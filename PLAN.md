@@ -7,7 +7,7 @@
 **Rama base de trabajo:** `dev`
 **Flujo:** `dev` → `feat/<nombre>` → (revisión) → merge a `dev` → *(al final de todo)* merge a `main`
 
-`main` **no se toca hasta que las 7 implementaciones estén terminadas.** Se integra todo en `dev`
+`main` **no se toca hasta que las 8 implementaciones estén terminadas.** Se integra todo en `dev`
 y se hace un solo merge a `main` al cerrar el plan. `dev` y las ramas `feat/*` sí se suben al
 remoto conforme se avanza: es el único respaldo del trabajo y da visibilidad al resto del equipo.
 No hay CI, así que ningún push dispara un deploy.
@@ -40,11 +40,11 @@ Resueltas antes de empezar. Quedan registradas aquí para no volver a abrirlas a
 | 3 | ¿"Queremos Conocerte" pide contacto? | **No. Sin email ni teléfono**, tal como está el banco de preguntas. |
 | 4 | ¿Se evitan respuestas duplicadas? | **Sí.** Doble barrera: marca en `localStorage` + verificación en el servidor por nombre + grupo (ver Fase 4). |
 | 5 | ¿El dashboard permite borrar? | **No. Solo lectura.** |
-| 6 | ¿Cuándo se actualiza el dominio de Resend? | **Al final (Fase 7).** `ieee-estl.com` aún no está configurado y el correo destinatario no está definido. |
+| 6 | ¿Cuándo se actualiza el dominio de Resend? | **Al final (Fase 8).** `ieee-estl.com` aún no está configurado y el correo destinatario no está definido. |
 | 7 | ¿Se arregla el build roto antes de la Fase 3? | **No.** Se espera a la Fase 3, que lo arregla al eliminar los archivos culpables. `main` queda sin poder desplegarse hasta entonces. |
 | 8 | ¿Se rescatan los datos históricos de Supabase? | **No. Se dan por perdidos.** Nadie conserva acceso al panel. Convex arranca vacío. |
-| 9 | ¿Se recupera la cuenta de Resend? | **No. Se crea una nueva**, cuando esté definido el correo destinatario (Fase 7). |
-| 10 | ¿Cuándo se mergea a `main`? | **Solo al terminar las 7 fases.** Hasta entonces todo se integra en `dev`, que sí se sube al remoto. |
+| 9 | ¿Se recupera la cuenta de Resend? | **No. Se crea una nueva**, cuando esté definido el correo destinatario (Fase 8). |
+| 10 | ¿Cuándo se mergea a `main`? | **Solo al terminar las 8 fases.** Hasta entonces todo se integra en `dev`, que sí se sube al remoto. |
 
 ---
 
@@ -89,9 +89,9 @@ hay trazabilidad de quién entró ni quién exportó datos, y rotar la contrase�
 todo el equipo. Es un compromiso razonable para un equipo pequeño; si más adelante quieren
 cuentas individuales, Convex Auth ya lo soporta y solo habría que dar de alta más usuarios.
 
-**Riesgo de seguridad a cubrir en la Fase 6:** el proveedor de contraseña de Convex Auth permite
+**Riesgo de seguridad a cubrir en la Fase 7:** el proveedor de contraseña de Convex Auth permite
 **auto-registro por defecto**. Si se deja así, cualquiera que descubra `/dashboard` puede crearse
-una cuenta y leer todas las respuestas. La Fase 6 debe deshabilitar explícitamente el alta de
+una cuenta y leer todas las respuestas. La Fase 7 debe deshabilitar explícitamente el alta de
 usuarios y dejar solo el inicio de sesión.
 
 ---
@@ -101,7 +101,7 @@ usuarios y dejar solo el inicio de sesión.
 | Área | Hoy | Después de este plan |
 |---|---|---|
 | Base de datos | Supabase (`@supabase/supabase-js`, anon key en cliente) | **Convex** |
-| Auth | Clerk (`clerkMiddleware` sin rutas protegidas) | **Convex Auth**, solo para `/dashboard` (ver Fase 6) |
+| Auth | Clerk (`clerkMiddleware` sin rutas protegidas) | **Convex Auth**, solo para `/dashboard` (ver Fase 7) |
 | Email | Resend (`POST /api/send`) | **Se conserva**, solo para "Únete a la rama"; dominio y destinatario actualizados |
 | Home | `Inicio` + `Unete` + `FAQ` (`Events` y `ComingSoon` comentados) | `Inicio` + `ComingSoon` (condicional) + `Queremos Conocerte` + `Unete` + `FAQ` |
 | Eventos | Componentes comentados en el home | Páginas propias `/events` y `/coming-soon` |
@@ -137,11 +137,12 @@ Fase 3  →  Migrar formularios + eliminar
            Supabase (Resend se conserva)       feat/convex-forms-migration
 Fase 4  →  Sección "Queremos Conocerte"        feat/queremos-conocerte
 Fase 5  →  Páginas /events y /coming-soon      feat/events-pages
-Fase 6  →  Dashboard administrativo privado    feat/admin-dashboard
-Fase 7  →  Dominio y correo de Resend          feat/resend-domain-update
+Fase 6  →  Registro desde los datos del evento feat/registro-desde-datos
+Fase 7  →  Dashboard administrativo privado    feat/admin-dashboard
+Fase 8  →  Dominio y correo de Resend          feat/resend-domain-update
 ```
 
-La Fase 7 va al final porque depende de algo externo al código: que `ieee-estl.com` quede
+La Fase 8 va al final porque depende de algo externo al código: que `ieee-estl.com` quede
 configurado y que se defina el correo destinatario. Nada más del plan la bloquea.
 
 ---
@@ -169,7 +170,7 @@ también desaparece.
 ### Riesgo / nota
 
 Al quitar el middleware, la app deja de tener cualquier capa de auth. Es intencional: la
-autenticación vuelve en la Fase 6, exclusivamente para `/dashboard`.
+autenticación vuelve en la Fase 7, exclusivamente para `/dashboard`.
 
 ### Commits sugeridos
 
@@ -343,9 +344,9 @@ solicitud **se pierde por completo**, porque no se persiste en ningún lado.
 
 El dominio `ieee-estl.com` todavía no está configurado y el destinatario no está definido, así
 que **esta fase no toca ni el remitente ni los destinatarios**: se muda la lógica de envío tal
-cual está a la `action`, y el cambio de dominio/correo queda para la **Fase 7**.
+cual está a la `action`, y el cambio de dominio/correo queda para la **Fase 8**.
 
-Lo que sí se prepara aquí, para que la Fase 7 sea un cambio de configuración y no de código:
+Lo que sí se prepara aquí, para que la Fase 8 sea un cambio de configuración y no de código:
 
 - **Destinatarios desde variable de entorno.** Hoy están hardcodeados tres correos personales en
   `route.ts` (`paulo.mantilla@ieee.org`, `mariolozano@ieee.org`, `lgmalkih@gmail.com`) — y dos de
@@ -418,7 +419,7 @@ Para desplegar en Cloudflare hay que cargar `NEXT_PUBLIC_CONVEX_URL` en el entor
 
 > Si al llegar a esta fase la cuenta de Resend todavía no existe, la fase se puede construir
 > completa igual: la `action` queda escrita y la persistencia en Convex funciona. Solo el envío
-> del correo quedaría inactivo hasta la Fase 7.
+> del correo quedaría inactivo hasta la Fase 8.
 
 > **Nota:** mientras `ieee-estl.com` no esté verificado en Resend, el envío fallará en producción
 > aunque el código esté correcto. Para probar esta fase se puede usar la dirección de pruebas
@@ -564,7 +565,78 @@ rotos en producción **en este momento**.
 
 ---
 
-## Fase 6 — Dashboard administrativo privado
+## Fase 6 — Registro desde los datos del evento
+
+**Rama sugerida:** `feat/registro-desde-datos`
+
+### El problema
+
+La información de un evento vive repartida en tres lugares que nadie mantiene sincronizados:
+
+| Dónde | Qué controla |
+|---|---|
+| `proximos` en `comingSoon.ts` | Que el evento se anuncie |
+| `<SelectItem>` en el formulario | Que se pueda elegir al registrarse |
+| `isRegistrationClosed` | Que el registro esté abierto |
+
+Anunciar un evento exige editar los tres y desplegar; cerrarlo al terminar, los tres otra vez.
+Nada avisa si se olvida uno — y ya ocurrió: al cerrar la Fase 5, los formularios seguían
+ofreciendo inscripción a tres eventos que ya habían pasado (dos talleres de septiembre de 2025 y
+un hackathon de noviembre de 2025). El de eventos no lo mostraba solo porque
+`isRegistrationClosed = true` lo tapaba, que es esconder el problema, no resolverlo.
+
+### La solución
+
+El evento se define **una sola vez**, en `comingSoon.ts`, y todo lo demás se deriva:
+
+```ts
+export type Proximo = Evento & {
+    registerLink?: string
+    /** Si es true, aparece como opción en el formulario de registro. */
+    registroAbierto?: boolean
+}
+```
+
+- Opciones del formulario = los `proximos` con `registroAbierto: true`
+- El registro está cerrado cuando no hay ninguno abierto — `isRegistrationClosed` desaparece
+- El anuncio en el home y en `/coming-soon` ya funciona así desde la Fase 5
+
+El ciclo de cada semestre queda en **dos ediciones, ambas en el archivo de datos**:
+
+1. **Anunciar:** agregar el objeto en `proximos`. Aparece en el home, en `/coming-soon` y en el
+   formulario, todo a la vez.
+2. **Cerrar:** moverlo a `events.ts`. Sale del formulario, el registro se cierra solo y queda en
+   el historial.
+
+Los talleres se resuelven igual: son eventos con `category: "Taller"`, así que
+`/register-workshop` filtra por categoría.
+
+### Cambios
+
+- `comingSoon.ts` — agregar `registroAbierto` y helpers para filtrar por categoría.
+- `registration-event-form.tsx` — derivar opciones de los datos; eliminar `isRegistrationClosed`
+  y el `<SelectItem>` hardcodeado.
+- `registration-form.tsx` — lo mismo, filtrando por categoría "Taller"; agregar el estado de
+  "registro cerrado" que hoy no tiene.
+
+### Commits sugeridos
+
+1. `eventos: agrega registroAbierto y helpers de filtrado a los datos`
+   → `src/app/data/comingSoon.ts`
+2. `formularios: deriva las opciones de eventos de los datos y elimina el hardcode`
+   → `src/components/registration-event-form.tsx`
+3. `formularios: deriva las opciones de talleres de los datos`
+   → `src/components/registration-form.tsx`
+
+### Pendiente relacionado, fuera de alcance
+
+`registration-form.tsx` y `registration-event-form.tsx` son casi el mismo componente duplicado:
+mismos campos, misma validación, mismo selector de grupo. Unificarlos es un refactor aparte que
+no entra en esta fase.
+
+---
+
+## Fase 7 — Dashboard administrativo privado
 
 **Rama sugerida:** `feat/admin-dashboard`
 
@@ -642,7 +714,7 @@ ahora quién la custodia.
 
 ---
 
-## Fase 7 — Dominio y correo de Resend
+## Fase 8 — Dominio y correo de Resend
 
 **Rama sugerida:** `feat/resend-domain-update`
 
