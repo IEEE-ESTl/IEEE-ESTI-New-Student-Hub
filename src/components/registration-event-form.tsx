@@ -139,7 +139,7 @@ export function RegistrationForm() {
         return (
             <Card className="shadow-lg border-t-4 border-[#0371a4]">
                 <CardContent className="pt-6 text-center py-8">
-                    <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                    <CheckCircle className="w-16 h-16 text-[#0371a4] mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-2">¡Registro Exitoso!</h3>
                     <p className="text-muted-foreground">
                         Tu lugar ha sido reservado correctamente en la base de datos.
