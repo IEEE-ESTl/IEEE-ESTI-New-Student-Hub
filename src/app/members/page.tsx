@@ -33,7 +33,7 @@ export default function Members() {
             </div>
             <div className="w-full max-w-7xl mx-auto">
                 <h1 className={`${bebasNeue.className} text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-[#0371a4] text-center mb-8 mt-14 sm:mb-12 lg:mb-16`}>
-                    Ex-Miembros
+                    Iconos
                 </h1>
                 <div className="flex flex-col items-center justify-center lg:grid lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-8">
                     {exMembers.map((member, idx) => (

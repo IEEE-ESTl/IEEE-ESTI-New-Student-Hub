@@ -1,17 +1,16 @@
 // src/app/data/members.ts
 import paulo from '@/assets/memberImages/paulo.webp';
-import mario from '@/assets/memberImages/mario.webp';
+import martin from '@/assets/memberImages/martin.webp';
 import abdiel from '@/assets/memberImages/abdiel.webp';
 import ivan from '@/assets/memberImages/ivan.webp';
 import malkhi from '@/assets/memberImages/malkhi.webp';
-import roberto from '@/assets/memberImages/roberto.webp';
 import { date } from 'zod';
 
 export const members = [
     {
-        name: 'Mario Lozano',
+        name: 'Ivan Rojo',
         date: 'Miembro desde 2024',
-        image: mario,
+        image: ivan,
         badges: [
             {
                 name: 'Presidente',
@@ -58,13 +57,13 @@ export const members = [
         ]
     },
     {
-        name: 'Ivan Rojo',
-        date: 'Miembro desde 2024',
-        image: ivan,
+        name: 'Malkhi Lopéz',
+        date: 'Miembro desde 2025',
+        image: malkhi,
         badges: [
             {
-                name: 'Diseñador',
-                description: 'Diseñador de la rama',
+                name: 'Diseñadora',
+                description: 'Diseñadora de la rama',
                 icon: 'brush',
                 color: 'bg-black',
                 iconColor: 'text-white',
@@ -72,32 +71,17 @@ export const members = [
         ]
     },
     {
-        name: 'Malkhi Lopéz',
+        name: 'Martín Hernández',
         date: 'Miembro desde 2025',
-        image: malkhi,
+        image: martin,
         badges: [
             {
-                name: 'Secretaria',
-                description: 'Encargada de la administración y organización de la rama',
+                name: 'Secretario',
+                description: 'Encargado de la administración y organización de la rama',
                 icon: 'secretary',
                 color: 'bg-black',
                 iconColor: 'text-white',
             }
         ]
     },
-    /*
-    {
-        name: 'Roberto Angel',
-        date: 'Miembro desde 2025',
-        image: roberto,
-        badges: [
-            {
-                name: 'Marketing',
-                description: 'Encargado de promocionar la comunidad y sus actividades',
-                icon: 'marketing',
-                color: 'bg-black',
-                iconColor: 'text-white',
-            }
-        ]
-    } */
 ]

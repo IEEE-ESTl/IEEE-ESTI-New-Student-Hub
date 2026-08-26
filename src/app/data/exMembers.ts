@@ -1,5 +1,6 @@
 import johan from '@/assets/memberImages/johan.webp';
 import erick from '@/assets/memberImages/ErickMedelGalindo.webp';
+import mario from '@/assets/memberImages/mario.webp';
 import valeri from '@/assets/memberImages/valeri.webp';
 
 export const exMembers = [
@@ -40,6 +41,27 @@ export const exMembers = [
                 name: 'Tesorero',
                 description: 'Fue tesorero de la rama',
                 icon: 'handCoins',
+                color: 'bg-black',
+                iconColor: 'text-white',
+            }
+        ]
+    },
+    {
+        name: 'Mario Lozano',
+        date: 'Fue miembro desde 2024 hasta 2026',
+        image: mario,
+        badges: [
+            {
+                name: 'Presidente',
+                description: 'Fue presidente de la rama',
+                icon: 'ieee',
+                color: 'bg-white',
+                iconColor: 'text-white',
+            },
+            {
+                name: 'Desarrollador',
+                description: 'Fue desarrollador de la rama',
+                icon: 'terminal',
                 color: 'bg-black',
                 iconColor: 'text-white',
             }
