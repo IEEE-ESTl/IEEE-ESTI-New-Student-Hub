@@ -40,6 +40,7 @@ Resueltas antes de empezar. Quedan registradas aquí para no volver a abrirlas a
 | 3 | ¿"Queremos Conocerte" pide contacto? | **No. Sin email ni teléfono**, tal como está el banco de preguntas. |
 | 4 | ¿Se evitan respuestas duplicadas? | **Sí.** Doble barrera: marca en `localStorage` + verificación en el servidor por nombre + grupo (ver Fase 4). |
 | 5 | ¿El dashboard permite borrar? | **No. Solo lectura.** |
+| 11 | ¿Exportación a CSV? | **Sí**, por tabla, generada en el navegador con los datos ya cargados (Fase 7). |
 | 6 | ¿Cuándo se actualiza el dominio de Resend? | **Al final (Fase 8).** `ieee-estl.com` aún no está configurado y el correo destinatario no está definido. |
 | 7 | ¿Se arregla el build roto antes de la Fase 3? | **No.** Se espera a la Fase 3, que lo arregla al eliminar los archivos culpables. `main` queda sin poder desplegarse hasta entonces. |
 | 8 | ¿Se rescatan los datos históricos de Supabase? | **No. Se dan por perdidos.** Nadie conserva acceso al panel. Convex arranca vacío. |
@@ -683,34 +684,83 @@ cuidado hay que tener con el orden, y lo hacemos juntos.
 forma de revocarle el acceso a una persona sin cambiarla para todos. Vale la pena acordar desde
 ahora quién la custodia.
 
+### Como se monto (procedimiento real)
+
+**Llaves.** NO se uso el asistente interactivo `npx @convex-dev/auth`: pide TTY y se
+cuelga. Se generaron de forma headless con `jose` y se cargaron en el entorno de Convex:
+
+```bash
+node -e 'import("jose").then(async({generateKeyPair,exportPKCS8,exportJWK})=>{const k=await generateKeyPair("RS256",{extractable:true});const priv=await exportPKCS8(k.privateKey);const pub=await exportJWK(k.publicKey);process.stdout.write(JSON.stringify({JWT_PRIVATE_KEY:priv.trimEnd().replace(/
+/g," "),JWKS:JSON.stringify({keys:[{use:"sig",...pub}]})}))})' > .auth-keys.json
+```
+
+Se cargan con la forma `NOMBRE=VALOR` (`bunx convex env set "JWT_PRIVATE_KEY=..."`), nunca
+separando nombre y valor: la llave empieza con `-----BEGIN` y la CLI lee el guion como bandera.
+Despues se borra `.auth-keys.json`.
+
+**Cuenta del equipo.** El alta se controla con `PERMITIR_ALTA_ADMIN`, una variable del entorno
+de Convex, no con una constante en el codigo — asi crear o recuperar la cuenta no exige editar
+ni desplegar:
+
+```bash
+bunx convex env set PERMITIR_ALTA_ADMIN true      # 1. abrir
+# 2. entrar a /dashboard/acceso?alta=1 y registrar la cuenta, una sola vez
+bunx convex env remove PERMITIR_ALTA_ADMIN        # 3. cerrar
+```
+
+El paso 3 no es opcional. Las credenciales de la cuenta viven en el gestor de contrasenas del
+equipo; **no se documentan aqui**.
+
+### Verificado
+
+- `/dashboard` sin sesion redirige a `/dashboard/acceso` (307).
+- Las queries de `convex/admin.ts` rechazan con "No autorizado" sin sesion.
+- **El alta esta bloqueada en el servidor**: un POST directo a `/api/auth` saltandose la
+  interfaz por completo devuelve `ConvexError: El registro esta deshabilitado`, y no se crea
+  ninguna cuenta. La tabla `users` tiene exactamente un registro.
+- Sesion, tablas, busqueda, orden, paginacion, exportacion a CSV y cierre de sesion.
+
+### Tres bugs encontrados al construirla
+
+1. **El `matcher` de los ejemplos no coincidia con `/dashboard`** en esta version de Next, asi
+   que el middleware nunca corria y la ruta quedaba sin proteger. Se detecto porque `curl`
+   devolvia `200` en vez de una redireccion. Ahora el matcher es explicito.
+2. **Acotar el matcher rompio el inicio de sesion**: falta `/api/auth`, por donde el navegador
+   intercambia los tokens. Sin ella, registrarse y entrar fallan sin decir por que.
+3. **Un mensaje de error que adivinaba la causa.** El `catch` del formulario decia "el alta esta
+   deshabilitada" ante cualquier fallo, lo que mando la investigacion al lugar equivocado. Un
+   error que dice "no se" es mejor que uno que inventa.
+
+Y uno mas, al cerrar sesion: el panel seguia montado y sus queries se relanzaban sin
+credenciales, `exigirSesion` lanzaba correctamente y React se caia. Se separo el contenedor de
+las tablas, que ahora viven dentro de `<Authenticated>` y se desmontan antes de poder fallar.
+
+### Costo asumido
+
+Montar `ConvexAuthNextjsServerProvider` en el layout raiz hace que **todas** las paginas pasen de
+estaticas a renderizadas en servidor, porque lee cookies. Para el trafico de una rama estudiantil
+es irrelevante. Si algun dia importa, se puede mover el provider al segmento del dashboard.
+
 ### Commits sugeridos
 
-1. `chore(deps): add @convex-dev/auth and tanstack table`
-   → `package.json`, `bun.lock`
-2. `feat(auth): configure convex auth with password provider`
+1. `deps: instala convex auth y los primitivos de tabla y pestanas`
+   → `package.json`, `bun.lock`, `src/components/ui/table.tsx`, `src/components/ui/tabs.tsx`
+2. `auth: configura Convex Auth con proveedor de contrasena`
    → `convex/auth.ts`, `convex/auth.config.ts`, `convex/http.ts`, `convex/schema.ts`
-3. `feat(auth): disable self sign-up and allow sign-in only`
-   → `convex/auth.ts`
-4. `feat(dashboard): add protected route shell and sign-in screen`
-   → `src/app/dashboard/layout.tsx`, `src/app/dashboard/page.tsx`, `src/middleware.ts`
-5. `feat(convex): add authenticated admin queries for all form submissions`
-   → `convex/admin.ts`
-6. `feat(dashboard): add reusable DataTable component`
-   → `src/components/dashboard/DataTable.tsx`, `src/components/ui/table.tsx`
-7. `feat(dashboard): add tabbed views for the four form datasets`
-   → `src/components/dashboard/*`
-8. `chore(seo): exclude /dashboard from indexing`
-   → `src/app/robots.ts`, metadata
-
-> Las `query` de `convex/admin.ts` deben verificar la sesión **dentro de la función**, no solo
-> confiar en que el middleware bloquee la ruta. Las funciones de Convex son alcanzables por su
-> propia URL, independientemente de lo que haga Next.js.
-
-### Lo que necesito de ti
-
-- El **correo y contraseña** con los que se creará la cuenta única del equipo — no me los pegues
-  en el chat: los tecleas tú en la pantalla de registro durante el paso descrito arriba.
-- ¿Se necesita exportar a CSV?
+3. `auth: protege /dashboard con middleware y pantalla de acceso`
+   → `src/middleware.ts`, `src/app/dashboard/acceso/page.tsx`,
+     `src/components/dashboard/FormularioAcceso.tsx`, `src/app/ConvexClientProvider.tsx`,
+     `src/app/layout.tsx`
+4. `convex: queries de admin que verifican la sesion`
+   → `convex/admin.ts`, `convex/_generated/api.d.ts`
+5. `dashboard: agrega la tabla de datos reutilizable con busqueda, orden y CSV`
+   → `src/components/dashboard/TablaDatos.tsx`
+6. `dashboard: panel con pestanas para los cuatro formularios`
+   → `src/components/dashboard/Panel.tsx`, `src/app/dashboard/page.tsx`
+7. `seo: excluye /dashboard de los buscadores`
+   → `src/app/robots.ts`
+8. `docs: documenta las variables de entorno de autenticacion`
+   → `.env.example`, `PLAN.md`
 
 ---
 
