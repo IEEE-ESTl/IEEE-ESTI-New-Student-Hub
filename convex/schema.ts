@@ -1,10 +1,15 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
 // Convex agrega `_id` y `_creationTime` a todos los documentos, así que ninguna
 // tabla necesita su propio campo de fecha.
 
 export default defineSchema({
+    // Tablas que necesita Convex Auth (users, authSessions, authAccounts, ...).
+    // Las define la libreria; no las administramos nosotros.
+    ...authTables,
+
     // Formulario "Únete a la rama" (JoinDialog).
     joinRequests: defineTable({
         nombreCompleto: v.string(),
