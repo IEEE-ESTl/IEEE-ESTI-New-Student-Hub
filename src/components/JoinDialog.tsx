@@ -21,6 +21,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { CheckCircle, AlertCircle } from "lucide-react"
+import { useAction } from "convex/react"
+import { api } from "../../convex/_generated/api"
 
 const formSchema = z
   .object({
@@ -39,7 +42,9 @@ const formSchema = z
       .min(10, "Por favor explica en al menos 10 caracteres por qué quieres unirte")
       .max(500, "La descripción no puede exceder 500 caracteres"),
     tipoParticipacion: z.enum(["member", "staff-member"]),
-    rolStaff: z.string().optional(),
+    rolStaff: z
+      .enum(["web-master", "tesorero", "designer", "secretary", "marketing"])
+      .optional(),
   })
   .refine(
     (data) => {
@@ -68,6 +73,10 @@ export default function JoinBranchDialog({
   description = "Este formulario tiene el objetivo de determinar tu interés en unirte a la IEEE Student Branch - ESTl. Como miembro, tendrás la oportunidad de colaborar con otros estudiantes apasionados por la carrera. Además, podrás participar en eventos, talleres y proyectos que te permitirán desarrollar tus habilidades y expandir tu red profesional.",
 }: JoinBranchDialogProps) {
   const [open, setOpen] = useState(false)
+  const [enviada, setEnviada] = useState(false)
+  const [errorEnvio, setErrorEnvio] = useState<string | null>(null)
+
+  const enviarSolicitud = useAction(api.joinRequests.enviar)
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -77,7 +86,7 @@ export default function JoinBranchDialog({
       telefono: "",
       razonUnirse: "",
       tipoParticipacion: undefined,
-      rolStaff: "",
+      rolStaff: undefined,
     },
     mode: "onChange",
   })
@@ -85,32 +94,62 @@ export default function JoinBranchDialog({
   const watchTipoParticipacion = form.watch("tipoParticipacion")
 
   const onSubmit = async (data: FormData) => {
+    setErrorEnvio(null)
+
     try {
-      const response = await fetch('/api/send', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      await enviarSolicitud({
+        ...data,
+        // El rol solo aplica cuando se postula como staff.
+        rolStaff: data.tipoParticipacion === "staff-member" ? data.rolStaff : undefined,
+      })
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error);
-      }
-
-      console.log('Solicitud de unión enviada correctamente:', result);
-      alert('Solicitud de unión enviada correctamente');
-      setOpen(false);
-      form.reset();
+      setEnviada(true)
+      form.reset()
     } catch (error) {
-      console.error('Error al enviar la solicitud:', error);
-      alert('Error al enviar la solicitud. Por favor intenta de nuevo.');
+      console.error("Error al enviar la solicitud:", error)
+      setErrorEnvio(
+        "No pudimos enviar tu solicitud. Revisa tu conexión e inténtalo de nuevo.",
+      )
     }
-  };
+  }
+
+  // Al cerrar el diálogo se limpia el estado, para que la próxima vez que se
+  // abra vuelva a mostrar el formulario y no la confirmación anterior.
+  const alCambiarApertura = (abierto: boolean) => {
+    setOpen(abierto)
+    if (!abierto) {
+      setEnviada(false)
+      setErrorEnvio(null)
+    }
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={alCambiarApertura}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+        {enviada ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>¡Solicitud enviada!</DialogTitle>
+              <DialogDescription>
+                Recibimos tu solicitud para unirte a la rama. La mesa directiva la revisará y
+                se pondrá en contacto contigo.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-col items-center py-6">
+              <CheckCircle className="w-16 h-16 text-[#0371a4] mb-4" />
+              <Button
+                type="button"
+                onClick={() => alCambiarApertura(false)}
+                className="bg-[#0371a4] text-white hover:bg-[#0371a4]/80 py-4 px-6 cursor-pointer"
+              >
+                Cerrar
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -228,8 +267,15 @@ export default function JoinBranchDialog({
               />
             )}
 
+            {errorEnvio && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                <span>{errorEnvio}</span>
+              </div>
+            )}
+
             <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="cursor-pointer">
+              <Button type="button" variant="outline" onClick={() => alCambiarApertura(false)} className="cursor-pointer">
                 Cancelar
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting} className="bg-[#0371a4] text-white hover:bg-[#0371a4]/80  py-4 px-6 cursor-pointer">
@@ -238,6 +284,8 @@ export default function JoinBranchDialog({
             </div>
           </form>
         </Form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )
