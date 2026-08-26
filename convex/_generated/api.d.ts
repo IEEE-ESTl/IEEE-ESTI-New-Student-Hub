@@ -8,7 +8,12 @@
  * @module
  */
 
+import type * as emails_joinRequest from "../emails/joinRequest.js";
+import type * as events from "../events.js";
 import type * as health from "../health.js";
+import type * as joinRequests from "../joinRequests.js";
+import type * as validaciones from "../validaciones.js";
+import type * as workshops from "../workshops.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +22,12 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "emails/joinRequest": typeof emails_joinRequest;
+  events: typeof events;
   health: typeof health;
+  joinRequests: typeof joinRequests;
+  validaciones: typeof validaciones;
+  workshops: typeof workshops;
 }>;
 
 /**

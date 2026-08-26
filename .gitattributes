@@ -1,0 +1,7 @@
+# Convex regenera los archivos de `convex/_generated/` con saltos de línea LF.
+# En Windows, Git los convierte a CRLF al restaurarlos, y Convex los vuelve a
+# escribir con LF: el archivo queda marcado como modificado aunque su contenido
+# sea idéntico, y eso bloquea los cambios de rama.
+#
+# Fijar `eol=lf` aquí hace que Git los deje tal como Convex los escribe.
+convex/_generated/** text eol=lf
