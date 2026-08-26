@@ -12,6 +12,7 @@ import { CheckCircle, AlertCircle } from "lucide-react"
 import { montserrat } from "@/lib/fonts"
 import { useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
+import { opcionesDeRegistro } from "@/app/data/comingSoon"
 
 interface FormData {
     nombreCompleto: string
@@ -45,6 +46,11 @@ export function RegistrationForm() {
     const [errorEnvio, setErrorEnvio] = useState<string | null>(null)
 
     const registrar = useMutation(api.workshops.registrar)
+
+    // Los talleres disponibles salen de los datos del evento, filtrando por
+    // categoria. Sin talleres con inscripcion abierta, el registro esta cerrado.
+    const talleres = opcionesDeRegistro("Taller")
+    const registroCerrado = talleres.length === 0
 
     const validateField = (name: string, value: string): string | undefined => {
         switch (name) {
@@ -158,6 +164,23 @@ export function RegistrationForm() {
                 <h3 className="text-xl font-semibold text-foreground mb-2">¡Registro Exitoso!</h3>
                 <p className="text-muted-foreground">
                   Tu inscripción ha sido procesada correctamente. Te contactaremos pronto.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      }
+
+      if (registroCerrado) {
+        return (
+          <Card className="shadow-lg border-t-4 border-destructive">
+            <CardContent className="pt-6">
+              <div className="text-center py-8">
+                <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-foreground mb-2">Registro Cerrado</h3>
+                <p className="text-muted-foreground">
+                  Por ahora no hay talleres con inscripción abierta. Atento a nuestras redes
+                  para los próximos.
                 </p>
               </div>
             </CardContent>
@@ -322,8 +345,11 @@ export function RegistrationForm() {
                     <SelectValue placeholder="Selecciona un taller" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="react-tailwind">Taller React/Tailwind</SelectItem>
-                    <SelectItem value="impresion-3d">Primeros pasos Impresión 3D</SelectItem>
+                    {talleres.map((opcion) => (
+                      <SelectItem key={opcion.valor} value={opcion.valor}>
+                        {opcion.etiqueta}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 {errors.taller && touched.taller && (
