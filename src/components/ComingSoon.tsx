@@ -7,28 +7,15 @@ import { BlurFade } from "./magicui/blur-fade"
 import { Badge } from "./ui/badge"
 import { bebasNeue, jetBrainsMono, montserrat } from "@/lib/fonts";
 
-interface Card {
-    id: number
-    title: string
-    description: string
-    fullDescription: string
-    date: string
-    location: string
-    category: string
-    instructor: string
-    image: string
-    registerLink?: string
-}
-
-const cards: Card[] = []
+import { proximos, type Proximo } from "@/app/data/comingSoon";
 
 export default function ComingSoon() {
-    const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+    const [selectedCard, setSelectedCard] = useState<Proximo | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
 
-    const openModal = (card: Card) => {
+    const openModal = (card: Proximo) => {
         setSelectedCard(card);
         setIsModalOpen(true);
         setTimeout(() => {
@@ -128,7 +115,7 @@ export default function ComingSoon() {
 
                 {/* Grid de eventos */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {cards.map((card, idx) => (
+                    {proximos.map((card, idx) => (
                         <BlurFade 
                             delay={0.15 + idx * 0.05} 
                             inView 
