@@ -5,7 +5,12 @@
 > nuevas implementaciones.
 
 **Rama base de trabajo:** `dev`
-**Flujo:** `dev` → `feat/<nombre>` → (revisión) → merge a `dev` → merge a `main`
+**Flujo:** `dev` → `feat/<nombre>` → (revisión) → merge a `dev` → *(al final de todo)* merge a `main`
+
+`main` **no se toca hasta que las 7 implementaciones estén terminadas.** Se integra todo en `dev`
+y se hace un solo merge a `main` al cerrar el plan. `dev` y las ramas `feat/*` sí se suben al
+remoto conforme se avanza: es el único respaldo del trabajo y da visibilidad al resto del equipo.
+No hay CI, así que ningún push dispara un deploy.
 
 ---
 
@@ -37,6 +42,9 @@ Resueltas antes de empezar. Quedan registradas aquí para no volver a abrirlas a
 | 5 | ¿El dashboard permite borrar? | **No. Solo lectura.** |
 | 6 | ¿Cuándo se actualiza el dominio de Resend? | **Al final (Fase 7).** `ieee-estl.com` aún no está configurado y el correo destinatario no está definido. |
 | 7 | ¿Se arregla el build roto antes de la Fase 3? | **No.** Se espera a la Fase 3, que lo arregla al eliminar los archivos culpables. `main` queda sin poder desplegarse hasta entonces. |
+| 8 | ¿Se rescatan los datos históricos de Supabase? | **No. Se dan por perdidos.** Nadie conserva acceso al panel. Convex arranca vacío. |
+| 9 | ¿Se recupera la cuenta de Resend? | **No. Se crea una nueva**, cuando esté definido el correo destinatario (Fase 7). |
+| 10 | ¿Cuándo se mergea a `main`? | **Solo al terminar las 7 fases.** Hasta entonces todo se integra en `dev`, que sí se sube al remoto. |
 
 ---
 
@@ -53,8 +61,13 @@ Consecuencias verificadas:
   `next build` truena al recolectar páginas: *"supabaseUrl is required"* y *"Missing API key"*.
   Son los **únicos dos** archivos que leen `process.env`, y ambos se eliminan en la Fase 3 — que
   por lo tanto arregla el build como efecto secundario.
-- **Los tres formularios ya están muertos**, o corriendo sobre el build de febrero. El último
-  commit en `main` es del **2026-02-26**.
+- **El sitio está fuera de línea.** `ieee-estl.com` no está pagado ni configurado. El último
+  commit en `main` es del **2026-02-26**. No hay nada desplegado que se pueda romper.
+- **Los tres formularios están muertos**, y no hay datos que rescatar: nadie conserva acceso al
+  panel de Supabase, así que los registros históricos de talleres y eventos **se dan por
+  perdidos**. Convex arranca vacío.
+- **No hay workflows de CI** (`.github/` no existe), así que ningún merge dispara un deploy
+  automático. Mergear a `main` es seguro aunque el build falle.
 - **`main` no es desplegable hasta la Fase 3.** Las fases 1 y 2 pueden mergearse como código,
   pero no tiene sentido intentar un deploy antes.
 
@@ -266,10 +279,7 @@ migrar nada real.
 - Cuenta de Convex creada.
 - Ejecutar `bunx convex dev` tú mismo (el login es interactivo y va ligado a tu cuenta).
 - Confirmar el nombre del proyecto en Convex.
-- **Decisión:** ¿migramos los datos históricos que ya existen en Supabase (registros previos de
-  talleres/eventos), o arrancamos Convex desde cero? Si hay que migrarlos, necesito un export CSV
-  de esas tablas — lo cual depende de que alguien conserve acceso al panel de Supabase, que a hoy
-  está sin confirmar.
+- *(Resuelto: Convex arranca vacío. No hay datos históricos que migrar — ver decisión 8.)*
 
 > `bunx convex dev` no depende del build de Next, así que esta fase se puede completar y verificar
 > aunque `bun run build` siga fallando. El build se arregla en la Fase 3.
@@ -371,12 +381,12 @@ y `main` vuelve a ser desplegable.
 
 ### Lo que necesito de ti
 
-- **¿Alguien conserva acceso al panel de Supabase?** Decide si los registros históricos de
-  talleres y eventos se rescatan o se dan por perdidos.
-- **¿Alguien conserva acceso a la cuenta de Resend?** Si no, hay que crear una nueva y generar
-  una API key.
-- La **API key de Resend** — no me la pegues en el chat: la cargas tú con
+- La **API key de la cuenta nueva de Resend** — no me la pegues en el chat: la cargas tú con
   `bunx convex env set RESEND_API_KEY <valor>` cuando lleguemos a este punto.
+
+> Si al llegar a esta fase la cuenta de Resend todavía no existe, la fase se puede construir
+> completa igual: la `action` queda escrita y la persistencia en Convex funciona. Solo el envío
+> del correo quedaría inactivo hasta la Fase 7.
 
 > **Nota:** mientras `ieee-estl.com` no esté verificado en Resend, el envío fallará en producción
 > aunque el código esté correcto. Para probar esta fase se puede usar la dirección de pruebas
