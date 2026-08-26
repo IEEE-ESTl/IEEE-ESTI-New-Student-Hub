@@ -240,20 +240,38 @@ joinRequests            // formulario "Únete a la rama"
   tipoParticipacion: "member" | "staff-member", rolStaff?
 
 workshopRegistrations   // registro a talleres
-  fullName, email, phone, group, workshop
+  nombreCompleto, email, telefono, grupo, taller
 
 eventRegistrations      // registro a eventos
-  fullName, email, phone, group, eventId
+  nombreCompleto, email, telefono, grupo, evento
 
 studentInterests        // "Queremos Conocerte" (Fase 4)
   nombreCompleto, grupoSemestre,
-  interesesTecnologicos: string[], nivelExperiencia,
-  formatoEventos: string[], industriaCuriosidad: string[],
-  metaSemestre
+  interesesTecnologicos[], nivelExperiencia,
+  formatoEventos[], industriaCuriosidad[],
+  metaSemestre, claveDedup
+  índice: by_claveDedup
 ```
 
 Convex agrega automáticamente `_id` y `_creationTime` a cada documento, así que no necesitamos
 campos de fecha propios.
+
+**Dos decisiones tomadas al escribir el esquema:**
+
+1. **Nombres de campo unificados en español.** Los formularios de talleres y eventos usaban
+   `fullName`, `phone`, `group`; el de "Únete" usaba `nombreCompleto`, `telefono`. Como no hay
+   datos que migrar y los tres formularios se reescriben en la Fase 3, se normalizó todo al
+   español, que es el idioma de las etiquetas del formulario y de las columnas que verá el equipo
+   en el dashboard. Los nombres de tabla se quedan en inglés por ser identificadores de código
+   (`api.workshops.registrar`).
+2. **Valores cerrados con `v.literal`** en lugar de `v.string()` para todas las opciones de
+   selección (intereses, nivel, formatos, industrias, rol de staff). Convex rechaza en el servidor
+   cualquier valor fuera de la lista, así que no puede entrar basura a la base aunque alguien
+   llame la mutation directamente. El costo es que agregar una opción nueva obliga a editar el
+   esquema, que es justo lo deseable: queda explícito.
+
+**Las cuatro tablas se definen aquí, en la Fase 2**, incluida `studentInterests`. La Fase 4 solo
+agrega su mutation, no vuelve a tocar el esquema.
 
 **Paso 5 — Provider en la app.** Crear `src/app/ConvexClientProvider.tsx` (componente cliente
 que monta `ConvexReactClient` con `NEXT_PUBLIC_CONVEX_URL`) y envolver `children` en
@@ -470,10 +488,8 @@ se topa con él sepa por qué.
 
 ### Commits sugeridos
 
-1. `feat(convex): add studentInterests schema and mutation`
-   → `convex/schema.ts`, `convex/studentInterests.ts`
-2. `feat(convex): reject duplicate submissions by normalized name and group`
-   → `convex/schema.ts` (índice), `convex/studentInterests.ts`
+1. `convex: mutation de studentInterests con rechazo de duplicados`
+   → `convex/studentInterests.ts` *(el esquema y su índice ya quedaron en la Fase 2)*
 3. `feat(home): add QueremosConocerte multi-step form component`
    → `src/components/QueremosConocerte.tsx`
 4. `feat(home): persist answered state in localStorage`
