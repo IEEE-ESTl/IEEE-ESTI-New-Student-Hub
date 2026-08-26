@@ -10,41 +10,45 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CheckCircle, AlertCircle } from "lucide-react"
 import { montserrat } from "@/lib/fonts"
-import { supabase } from "@/config/supabaseClient"
+import { useMutation } from "convex/react"
+import { api } from "../../convex/_generated/api"
 
 interface FormData {
-    fullName: string
+    nombreCompleto: string
     email: string
-    phone: string
-    group: string
-    workshop: string
+    telefono: string
+    grupo: string
+    taller: string
 }
 
 interface FormErrors {
-    fullName?: string
+    nombreCompleto?: string
     email?: string
-    phone?: string
-    group?: string
-    workshop?: string
+    telefono?: string
+    grupo?: string
+    taller?: string
 }
 
 export function RegistrationForm() {
     const [formData, setFormData] = useState<FormData>({
-        fullName: "",
+        nombreCompleto: "",
         email: "",
-        phone: "",
-        group: "",
-        workshop: "",
+        telefono: "",
+        grupo: "",
+        taller: "",
     })
 
     const [errors, setErrors] = useState<FormErrors>({})
     const [touched, setTouched] = useState<Record<string, boolean>>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
+    const [errorEnvio, setErrorEnvio] = useState<string | null>(null)
+
+    const registrar = useMutation(api.workshops.registrar)
 
     const validateField = (name: string, value: string): string | undefined => {
         switch (name) {
-            case "fullName":
+            case "nombreCompleto":
                 if (!value.trim()) return "El nombre completo es requerido"
                 if (value.trim().length < 3) return "El nombre completo debe tener al menos 3 caracteres"
                 if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) return "El nombre solo puede contener letras y espacios"
@@ -56,18 +60,18 @@ export function RegistrationForm() {
                 if (!emailRegex.test(value)) return "El email no es válido, por favor ingresa un email de la UAEH"
                 return undefined
             
-            case "phone":
+            case "telefono":
                 if (!value.trim()) return "El número de teléfono es requerido"
-                const phoneRegex = /^[\d\s\-+$$$$]+$/;
-                if (!phoneRegex.test(value)) return "El número de teléfono no es válido"
+                const telefonoRegex = /^[\d\s\-+$$$$]+$/;
+                if (!telefonoRegex.test(value)) return "El número de teléfono no es válido"
                 if (value.replace(/\D/g, "").length < 8) return "El número de teléfono debe tener al menos 8 dígitos"
                 return undefined
             
-            case "group":
+            case "grupo":
                 if (!value.trim()) return "El grupo es requerido"
                 return undefined
             
-            case "workshop":
+            case "taller":
                 if (!value.trim()) return "El taller es requerido"
                 return undefined
             
@@ -108,48 +112,30 @@ export function RegistrationForm() {
         e.preventDefault()
     
         if (!validateForm()) return
-    
-        setIsSubmitting(true)
 
-        const userData: FormData = {
-            fullName: formData.fullName,
-            email: formData.email,
-            phone: formData.phone,
-            group: formData.group,
-            workshop: formData.workshop,
-        }
+        setIsSubmitting(true)
+        setErrorEnvio(null)
 
         try {
-            const { data, error } = await supabase
-                .from("ieee-workshops")
-                .insert([userData])
-                .select();
-            
-                if (error) throw error;
+            await registrar(formData)
 
-                if (data) {
-                    setIsSubmitting(false)
-                    setIsSubmitted(true)
-                }
-
-                setTimeout(() => {
-                    setIsSubmitted(false)
-                    setFormData({
-                        fullName: "",
-                        email: "",
-                        phone: "",
-                        group: "",
-                        workshop: "",
-                    })
-                    setErrors({})
-                    setTouched({})
-                }, 5000);
+            setIsSubmitted(true)
+            setFormData({
+                nombreCompleto: "",
+                email: "",
+                telefono: "",
+                grupo: "",
+                taller: "",
+            })
+            setErrors({})
+            setTouched({})
         } catch (error) {
             console.error("Error al registrar el taller:", error)
+            setErrorEnvio(
+                "No pudimos registrar tu inscripción. Revisa tu conexión e inténtalo de nuevo."
+            )
+        } finally {
             setIsSubmitting(false)
-            setErrors({
-                fullName: "Error al registrar el taller",
-            })
         }
       }
 
@@ -194,26 +180,26 @@ export function RegistrationForm() {
                   <Input
                     id="nombreCompleto"
                     type="text"
-                    value={formData.fullName}
-                    onChange={(e) => handleInputChange("fullName", e.target.value)}
-                    onBlur={() => handleBlur("fullName")}
+                    value={formData.nombreCompleto}
+                    onChange={(e) => handleInputChange("nombreCompleto", e.target.value)}
+                    onBlur={() => handleBlur("nombreCompleto")}
                     className={`${
-                      getFieldStatus("fullName") === "error"
+                      getFieldStatus("nombreCompleto") === "error"
                         ? "border-destructive focus:ring-destructive"
-                        : getFieldStatus("fullName") === "success"
+                        : getFieldStatus("nombreCompleto") === "success"
                           ? "border-accent focus:ring-accent"
                           : ""
                     }`}
                     placeholder="Ingresa tu nombre completo"
                   />
-                  {getFieldStatus("fullName") === "success" && (
+                  {getFieldStatus("nombreCompleto") === "success" && (
                     <CheckCircle className="absolute right-3 top-3 w-4 h-4 text-accent" />
                   )}
                 </div>
-                {errors.fullName && touched.fullName && (
+                {errors.nombreCompleto && touched.nombreCompleto && (
                   <div className="flex items-center gap-1 text-sm text-destructive">
                     <AlertCircle className="w-4 h-4" />
-                    {errors.fullName}
+                    {errors.nombreCompleto}
                   </div>
                 )}
               </div>
@@ -256,46 +242,46 @@ export function RegistrationForm() {
                 </Label>
                 <div className="relative">
                   <Input
-                    id="phone"
+                    id="telefono"
                     type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    onBlur={() => handleBlur("phone")}
+                    value={formData.telefono}
+                    onChange={(e) => handleInputChange("telefono", e.target.value)}
+                    onBlur={() => handleBlur("telefono")}
                     className={`${
-                      getFieldStatus("phone") === "error"
+                      getFieldStatus("telefono") === "error"
                         ? "border-destructive focus:ring-destructive"
-                        : getFieldStatus("phone") === "success"
+                        : getFieldStatus("telefono") === "success"
                           ? "border-accent focus:ring-accent"
                           : ""
                     }`}
                     placeholder="+52 123 456 7890"
                   />
-                  {getFieldStatus("phone") === "success" && (
+                  {getFieldStatus("telefono") === "success" && (
                     <CheckCircle className="absolute right-3 top-3 w-4 h-4 text-accent" />
                   )}
                 </div>
-                {errors.phone && touched.phone && (
+                {errors.telefono && touched.telefono && (
                   <div className="flex items-center gap-1 text-sm text-destructive">
                     <AlertCircle className="w-4 h-4" />
-                    {errors.phone}
+                    {errors.telefono}
                   </div>
                 )}
               </div>
     
               <div className="space-y-2">
-                <Label htmlFor="group" className={`${montserrat.className} text-sm font-medium`}>
+                <Label htmlFor="grupo" className={`${montserrat.className} text-sm font-medium`}>
                   Grupo *
                 </Label>
-                <Select value={formData.group} onValueChange={(value) => handleInputChange("group", value)}>
+                <Select value={formData.grupo} onValueChange={(value) => handleInputChange("grupo", value)}>
                   <SelectTrigger
                     className={`${
-                      getFieldStatus("group") === "error"
+                      getFieldStatus("grupo") === "error"
                         ? "border-destructive focus:ring-destructive"
-                        : getFieldStatus("group") === "success"
+                        : getFieldStatus("grupo") === "success"
                           ? "border-accent focus:ring-accent"
                           : ""
                     }`}
-                    onBlur={() => handleBlur("group")}
+                    onBlur={() => handleBlur("grupo")}
                   >
                     <SelectValue placeholder="Selecciona tu grupo" />
                   </SelectTrigger>
@@ -310,10 +296,10 @@ export function RegistrationForm() {
                     <SelectItem value="702">Grupo 702</SelectItem>
                   </SelectContent>
                 </Select>
-                {errors.group && touched.group && (
+                {errors.grupo && touched.grupo && (
                   <div className="flex items-center gap-1 text-sm text-destructive">
                     <AlertCircle className="w-4 h-4" />
-                    {errors.group}
+                    {errors.grupo}
                   </div>
                 )}
               </div>
@@ -322,16 +308,16 @@ export function RegistrationForm() {
                 <Label htmlFor="taller" className={`${montserrat.className} text-sm font-medium`}>
                   Taller *
                 </Label>
-                <Select value={formData.workshop} onValueChange={(value) => handleInputChange("workshop", value)}>
+                <Select value={formData.taller} onValueChange={(value) => handleInputChange("taller", value)}>
                   <SelectTrigger
                     className={`${
-                      getFieldStatus("workshop") === "error"
+                      getFieldStatus("taller") === "error"
                         ? "border-destructive focus:ring-destructive"
-                        : getFieldStatus("workshop") === "success"
+                        : getFieldStatus("taller") === "success"
                           ? "border-accent focus:ring-accent"
                           : ""
                     }`}
-                    onBlur={() => handleBlur("workshop")}
+                    onBlur={() => handleBlur("taller")}
                   >
                     <SelectValue placeholder="Selecciona un taller" />
                   </SelectTrigger>
@@ -340,14 +326,21 @@ export function RegistrationForm() {
                     <SelectItem value="impresion-3d">Primeros pasos Impresión 3D</SelectItem>
                   </SelectContent>
                 </Select>
-                {errors.workshop && touched.workshop && (
+                {errors.taller && touched.taller && (
                   <div className="flex items-center gap-1 text-sm text-destructive">
                     <AlertCircle className="w-4 h-4" />
-                    {errors.workshop}
+                    {errors.taller}
                   </div>
                 )}
               </div>
     
+              {errorEnvio && (
+                <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                  <span>{errorEnvio}</span>
+                </div>
+              )}
+
               <Button
                 type="submit"
                 className={`${montserrat.className} w-full bg-[#0371a4] hover:bg-[#0371a4]/80 text-white cursor-pointer`}

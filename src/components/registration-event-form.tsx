@@ -9,33 +9,32 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { montserrat } from "@/lib/fonts"
-import { supabase } from "@/config/supabaseClient"
+import { useMutation } from "convex/react"
+import { api } from "../../convex/_generated/api"
 
-// Esquema que coincide con tu lógica de negocio
-// Aunque la tabla pide UUIDs, el form debe recolectar la info para crear ese UUID
 interface FormData {
-    fullName: string
+    nombreCompleto: string
     email: string
-    phone: string
-    group: string
-    eventId: string // UUID del evento
+    telefono: string
+    grupo: string
+    evento: string // slug del evento, p. ej. "hackathon-frontend"
 }
 
 interface FormErrors {
-    fullName?: string
+    nombreCompleto?: string
     email?: string
-    phone?: string
-    group?: string
-    eventId?: string
+    telefono?: string
+    grupo?: string
+    evento?: string
 }
 
 export function RegistrationForm() {
     const [formData, setFormData] = useState<FormData>({
-        fullName: "",
+        nombreCompleto: "",
         email: "",
-        phone: "",
-        group: "",
-        eventId: "",
+        telefono: "",
+        grupo: "",
+        evento: "",
     })
 
     const [errors, setErrors] = useState<FormErrors>({})
@@ -43,11 +42,14 @@ export function RegistrationForm() {
     const [isRegistrationClosed, setIsRegistrationClosed] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
+    const [errorEnvio, setErrorEnvio] = useState<string | null>(null)
+
+    const registrar = useMutation(api.events.registrar)
 
     // --- VALIDACIONES ---
     const validateField = (name: string, value: string): string | undefined => {
         switch (name) {
-            case "fullName":
+            case "nombreCompleto":
                 if (!value.trim()) return "El nombre es requerido"
                 if (value.trim().length < 3) return "Mínimo 3 caracteres"
                 return undefined
@@ -58,16 +60,15 @@ export function RegistrationForm() {
                 if (!emailRegex.test(value)) return "Email inválido"
                 return undefined
 
-            case "phone":
+            case "telefono":
                 if (!value.trim()) return "El teléfono es requerido"
-                const phoneRegex = /^[\d\s\-+()]+$/;
-                if (!phoneRegex.test(value)) return "Formato inválido"
+                const telefonoRegex = /^[\d\s\-+()]+$/;
+                if (!telefonoRegex.test(value)) return "Formato inválido"
                 if (value.replace(/\D/g, "").length < 10) return "Mínimo 10 dígitos"
                 return undefined
 
-            case "eventId":
+            case "evento":
                 if (!value.trim()) return "Debes seleccionar un evento"
-                // Opcional: Validar que sea UUID v4
                 return undefined
 
             default:
@@ -103,45 +104,22 @@ export function RegistrationForm() {
         setTouched(Object.keys(formData).reduce((acc, key) => ({ ...acc, [key]: true }), {}))
 
         if (!isValid) return
+
         setIsSubmitting(true)
+        setErrorEnvio(null)
 
         try {
-            // 2. Llamada a Supabase
-            // Usamos .rpc() (Remote Procedure Call)
-            // Esto permite enviar datos de perfil + ID de evento, y que la base de datos
-            // se encargue de buscar/crear el usuario y llenar 'event_registration'.
+            await registrar(formData)
 
-            // Dentro de handleSubmit...
-
-            const { data, error } = await supabase.rpc('register_attendee', {
-                p_full_name: formData.fullName,  // Coincide con el argumento SQL
-                p_email: formData.email,
-                p_phone: formData.phone,         // Ahora se guardará en la tabla user
-                p_group: formData.group,         // Ahora se guardará en la tabla user
-                p_event_id: formData.eventId
-            })
-
-            if (error) throw error
-
-            // Éxito
             setIsSubmitted(true)
-
-            // Reset automático
-            setFormData({ fullName: "", email: "", phone: "", group: "", eventId: "" })
+            setFormData({ nombreCompleto: "", email: "", telefono: "", grupo: "", evento: "" })
             setErrors({})
             setTouched({})
-
-
-        } catch (error: any) {
+        } catch (error) {
             console.error("Error registro:", error)
-            let errorMsg = "Error al procesar el registro."
-
-            // Manejo de errores comunes de SQL (ej: unique constraint)
-            if (error.message?.includes("violates unique constraint")) {
-                errorMsg = "Este correo ya está registrado para este evento."
-            }
-
-            setErrors({ email: errorMsg })
+            setErrorEnvio(
+                "No pudimos reservar tu lugar. Revisa tu conexión e inténtalo de nuevo."
+            )
         } finally {
             setIsSubmitting(false)
         }
@@ -194,43 +172,43 @@ export function RegistrationForm() {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Selección de Evento */}
                         <div className="space-y-2">
-                            <Label htmlFor="eventId" className="text-sm font-medium">Selecciona el Evento *</Label>
-                            <Select value={formData.eventId} onValueChange={(v) => handleInputChange("eventId", v)}>
-                                <SelectTrigger className={getFieldStatus("eventId") === "error" ? "border-destructive" : ""}>
+                            <Label htmlFor="evento" className="text-sm font-medium">Selecciona el Evento *</Label>
+                            <Select value={formData.evento} onValueChange={(v) => handleInputChange("evento", v)}>
+                                <SelectTrigger className={getFieldStatus("evento") === "error" ? "border-destructive" : ""}>
                                     <SelectValue placeholder="-- Elige un evento --" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="008608d9-a8c1-46e3-b3c5-d53d527c9e65">Hackathon Frontend</SelectItem>
+                                    <SelectItem value="hackathon-frontend">Hackathon Frontend</SelectItem>
                                 </SelectContent>
                             </Select>
-                            {errors.eventId && <p className="text-xs text-destructive">{errors.eventId}</p>}
+                            {errors.evento && <p className="text-xs text-destructive">{errors.evento}</p>}
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-2">
                             {/* Nombre */}
                             <div className="space-y-2">
-                                <Label htmlFor="fullName">Nombre Completo *</Label>
+                                <Label htmlFor="nombreCompleto">Nombre Completo *</Label>
                                 <div className="relative">
                                     <Input
-                                        id="fullName"
-                                        value={formData.fullName}
-                                        onChange={(e) => handleInputChange("fullName", e.target.value)}
-                                        onBlur={() => handleBlur("fullName")}
-                                        className={getFieldStatus("fullName") === "error" ? "border-destructive" : ""}
+                                        id="nombreCompleto"
+                                        value={formData.nombreCompleto}
+                                        onChange={(e) => handleInputChange("nombreCompleto", e.target.value)}
+                                        onBlur={() => handleBlur("nombreCompleto")}
+                                        className={getFieldStatus("nombreCompleto") === "error" ? "border-destructive" : ""}
                                     />
-                                    {getFieldStatus("fullName") === "success" && (
+                                    {getFieldStatus("nombreCompleto") === "success" && (
                                         <CheckCircle className="absolute right-3 top-2.5 w-4 h-4 text-green-500" />
                                     )}
                                 </div>
-                                {errors.fullName && touched.fullName && (
-                                    <p className="text-xs text-destructive">{errors.fullName}</p>
+                                {errors.nombreCompleto && touched.nombreCompleto && (
+                                    <p className="text-xs text-destructive">{errors.nombreCompleto}</p>
                                 )}
                             </div>
 
                             {/* Grupo */}
                             <div className="space-y-2">
-                                <Label htmlFor="group">Grupo / Semestre *</Label>
-                                <Select value={formData.group} onValueChange={(v) => handleInputChange("group", v)}>
+                                <Label htmlFor="grupo">Grupo / Semestre *</Label>
+                                <Select value={formData.grupo} onValueChange={(v) => handleInputChange("grupo", v)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Selecciona" />
                                     </SelectTrigger>
@@ -273,19 +251,26 @@ export function RegistrationForm() {
 
                         {/* Teléfono */}
                         <div className="space-y-2">
-                            <Label htmlFor="phone">Teléfono *</Label>
+                            <Label htmlFor="telefono">Teléfono *</Label>
                             <Input
-                                id="phone"
+                                id="telefono"
                                 type="tel"
-                                value={formData.phone}
-                                onChange={(e) => handleInputChange("phone", e.target.value)}
-                                onBlur={() => handleBlur("phone")}
-                                className={getFieldStatus("phone") === "error" ? "border-destructive" : ""}
+                                value={formData.telefono}
+                                onChange={(e) => handleInputChange("telefono", e.target.value)}
+                                onBlur={() => handleBlur("telefono")}
+                                className={getFieldStatus("telefono") === "error" ? "border-destructive" : ""}
                             />
-                            {errors.phone && touched.phone && (
-                                <p className="text-xs text-destructive">{errors.phone}</p>
+                            {errors.telefono && touched.telefono && (
+                                <p className="text-xs text-destructive">{errors.telefono}</p>
                             )}
                         </div>
+
+                        {errorEnvio && (
+                            <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                                <span>{errorEnvio}</span>
+                            </div>
+                        )}
 
                         <Button
                             type="submit"
