@@ -14,8 +14,8 @@ export default function Home() {
   return (
     <>
       <Inicio />
-      <Events />
-      <ComingSoon />
+      {/* <Events /> */}
+      {/* <ComingSoon /> */}
       <Unete />
       <FAQ />
     </>
