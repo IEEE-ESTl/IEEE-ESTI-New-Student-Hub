@@ -164,7 +164,8 @@ export function RegistrationForm() {
                     <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-2">Registro Cerrado</h3>
                     <p className="text-muted-foreground">
-                        Lo sentimos, el período de registro para este evento ha finalizado.
+                        Por ahora no hay eventos con inscripción abierta. Atento a nuestras redes
+                        para los próximos.
                     </p>
                 </CardContent>
             </Card>
