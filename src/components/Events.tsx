@@ -6,7 +6,7 @@ import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { BlurFade } from "./magicui/blur-fade"
 import { bebasNeue, jetBrainsMono, montserrat } from "@/lib/fonts";
-import { eventos, type Evento } from "@/app/data/events";
+import { eventos, COLOR_CATEGORIA, type Evento } from "@/app/data/events";
 
 
 export default function Events() {
@@ -54,22 +54,6 @@ export default function Events() {
         };
     }, [isModalOpen]);
 
-    const getCategoryColor = (category: string) => {
-        switch (category.toLowerCase()) {
-          case 'taller':
-            return 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-          case 'conference':
-            return 'bg-purple-100 text-purple-800 hover:bg-purple-200'
-          case 'hackathon':
-            return 'bg-green-100 text-green-800 hover:bg-green-200'
-          case 'congreso':
-            return 'bg-red-100 text-red-800 hover:bg-red-200'
-          case 'evento':
-            return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-          default:
-            return 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-        }
-    }
 
     return (
         <section className="min-h-screen bg-white mb-10 px-4 sm:px-6 lg:px-8" id="events">
@@ -100,7 +84,7 @@ export default function Events() {
                                     className="w-full h-48 object-cover"
                                 />
                                 <Badge
-                                    className={`absolute top-4 left-4 ${getCategoryColor(event.category)}`}
+                                    className={`absolute top-4 left-4 ${COLOR_CATEGORIA[event.category]}`}
                                 >
                                     {event.category}
                                 </Badge>
@@ -165,7 +149,7 @@ export default function Events() {
                                         className="w-full h-64 lg:h-full object-cover lg:rounded-l-2xl"
                                     />
                                     <Badge
-                                        className={`absolute top-4 left-4 ${getCategoryColor(selectedEvent.category)}`}
+                                        className={`absolute top-4 left-4 ${COLOR_CATEGORIA[selectedEvent.category]}`}
                                     >
                                         {selectedEvent.category}
                                     </Badge>

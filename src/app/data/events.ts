@@ -28,6 +28,25 @@ export const CATEGORIAS = [
 
 export type Categoria = (typeof CATEGORIAS)[number]
 
+/**
+ * Color de la etiqueta de cada categoria.
+ *
+ * Vive aqui, junto a `CATEGORIAS`, para que agregar una categoria siga siendo
+ * editar un solo archivo. Antes cada componente tenia su propia lista y se
+ * desincronizaron: un congreso se veia rojo en /events y gris en /coming-soon.
+ *
+ * Al ser un `Record<Categoria, string>`, TypeScript exige que TODAS las
+ * categorias tengan color. Si agregas una a la lista y olvidas el color, el
+ * proyecto no compila.
+ */
+export const COLOR_CATEGORIA: Record<Categoria, string> = {
+    Taller: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+    Hackathon: "bg-green-100 text-green-800 hover:bg-green-200",
+    Congreso: "bg-red-100 text-red-800 hover:bg-red-200",
+    Conferencia: "bg-purple-100 text-purple-800 hover:bg-purple-200",
+    Evento: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+}
+
 export type Evento = {
     id: number
     title: string

@@ -9,6 +9,7 @@ import { bebasNeue, jetBrainsMono, montserrat } from "@/lib/fonts";
 
 import { proximos, registroVigente, rutaDeRegistro, type Proximo } from "@/app/data/comingSoon";
 import Link from "next/link";
+import { COLOR_CATEGORIA } from "@/app/data/events";
 
 export default function ComingSoon() {
     const [selectedCard, setSelectedCard] = useState<Proximo | null>(null);
@@ -94,18 +95,6 @@ export default function ComingSoon() {
         };
     }, [isModalOpen]);
 
-    const getCategoryColor = (category: string) => {
-        switch (category.toLowerCase()) {
-          case 'taller':
-            return 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-          case 'evento':
-            return 'bg-purple-100 text-purple-800 hover:bg-purple-200'
-          case 'hackathon':
-            return 'bg-green-100 text-green-800 hover:bg-green-200'
-          default:
-            return 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-        }
-    }
 
     return (
         <section className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8" id="coming-soon">
@@ -136,7 +125,7 @@ export default function ComingSoon() {
                                     className="w-full h-48 object-cover"
                                 />
                                 <Badge
-                                    className={`absolute top-4 left-4 ${getCategoryColor(card.category)}`}
+                                    className={`absolute top-4 left-4 ${COLOR_CATEGORIA[card.category]}`}
                                 >
                                     {card.category}
                                 </Badge>
@@ -201,7 +190,7 @@ export default function ComingSoon() {
                                         className="w-full h-64 lg:h-full object-cover lg:rounded-l-2xl"
                                     />
                                     <Badge
-                                        className={`absolute top-4 left-4 ${getCategoryColor(selectedCard.category)}`}
+                                        className={`absolute top-4 left-4 ${COLOR_CATEGORIA[selectedCard.category]}`}
                                     >
                                         {selectedCard.category}
                                     </Badge>
