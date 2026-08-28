@@ -7,7 +7,8 @@ import { BlurFade } from "./magicui/blur-fade"
 import { Badge } from "./ui/badge"
 import { bebasNeue, jetBrainsMono, montserrat } from "@/lib/fonts";
 
-import { proximos, type Proximo } from "@/app/data/comingSoon";
+import { proximos, registroVigente, rutaDeRegistro, type Proximo } from "@/app/data/comingSoon";
+import Link from "next/link";
 
 export default function ComingSoon() {
     const [selectedCard, setSelectedCard] = useState<Proximo | null>(null);
@@ -242,17 +243,39 @@ export default function ComingSoon() {
                                             </div>
                                         </div>
 
-                                        {selectedCard.registerLink && (
-                                        <div className="flex justify-center items-center">
-                                            <Button
-                                                className="bg-[#0371a4] hover:bg-[#0371a4]/80 text-white w-full cursor-pointer mt-5"
-                                                disabled={false}
-                                                onClick={() => window.open(selectedCard.registerLink)}
-                                            >
-                                                Registrate aquí
-                                            </Button>
-                                        </div>
-                                        )}
+                                        {/*
+                                          Dos caminos para inscribirse, y el orden importa:
+
+                                          1. `registerLink` gana si existe. Si alguien lo escribio
+                                             es porque la inscripcion vive fuera del sitio (otra
+                                             institucion, un patrocinador). Ojo: esos datos NO
+                                             llegan al dashboard.
+                                          2. Si no, y el registro esta vigente, se enlaza al
+                                             formulario propio. La ruta la decide la categoria:
+                                             talleres a /register-workshop, lo demas a
+                                             /register-event.
+
+                                          Sin ninguno de los dos, no hay boton: el evento esta
+                                          anunciado pero todavia no acepta inscripciones.
+                                        */}
+                                        {selectedCard.registerLink ? (
+                                            <div className="flex justify-center items-center">
+                                                <Button
+                                                    className="bg-[#0371a4] hover:bg-[#0371a4]/80 text-white w-full cursor-pointer mt-5"
+                                                    onClick={() => window.open(selectedCard.registerLink, "_blank", "noopener,noreferrer")}
+                                                >
+                                                    Regístrate aquí
+                                                </Button>
+                                            </div>
+                                        ) : registroVigente(selectedCard) ? (
+                                            <div className="flex justify-center items-center">
+                                                <Button asChild className="bg-[#0371a4] hover:bg-[#0371a4]/80 text-white w-full cursor-pointer mt-5">
+                                                    <Link href={rutaDeRegistro(selectedCard)}>
+                                                        Regístrate aquí
+                                                    </Link>
+                                                </Button>
+                                            </div>
+                                        ) : null}
                                     </div>
                                 </div>
                             </div>
