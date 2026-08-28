@@ -4,6 +4,30 @@
 // editar una lista y no tocar JSX. Es también lo que permite que el home
 // decida si mostrar la seccion de proximos eventos: ver `comingSoon.ts`.
 
+/**
+ * Categorias permitidas para un evento.
+ *
+ * Es una lista cerrada a proposito. Antes `category` era texto libre, y un error
+ * de dedo no daba error: simplemente mandaba el evento al formulario equivocado
+ * sin avisar. Con esta lista, TypeScript marca el problema al escribirlo.
+ *
+ * La categoria decide a que formulario va la inscripcion:
+ *   "Taller"  -> /register-workshop  (solo alumnos, exige correo @uaeh.edu.mx)
+ *   las demas -> /register-event     (acepta externos)
+ *
+ * Para agregar una categoria nueva, anadela aqui y dale un color en
+ * `getCategoryColor` de Events.tsx y ComingSoon.tsx.
+ */
+export const CATEGORIAS = [
+    "Taller",
+    "Hackathon",
+    "Congreso",
+    "Conferencia",
+    "Evento",
+] as const
+
+export type Categoria = (typeof CATEGORIAS)[number]
+
 export type Evento = {
     id: number
     title: string
@@ -11,7 +35,7 @@ export type Evento = {
     fullDescription: string
     date: string
     location: string
-    category: string
+    category: Categoria
     instructor: string
     image: string
 }

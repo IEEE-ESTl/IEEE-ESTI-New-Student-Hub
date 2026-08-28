@@ -1,4 +1,4 @@
-import type { Evento } from "./events"
+import type { Categoria, Evento } from "./events"
 
 // Proximos eventos. Esta lista es la UNICA fuente de verdad sobre lo que viene:
 // de aqui salen el anuncio en el home, la pagina /coming-soon y las opciones de
@@ -81,9 +81,7 @@ export function registroVigente(evento: Proximo): boolean {
  * Los talleres son solo para alumnos de la ESTl; el resto acepta externos.
  */
 export function rutaDeRegistro(evento: Proximo): string {
-    return evento.category.toLowerCase() === "taller"
-        ? "/register-workshop"
-        : "/register-event"
+    return evento.category === "Taller" ? "/register-workshop" : "/register-event"
 }
 
 /**
@@ -108,13 +106,11 @@ export function slug(titulo: string): string {
  * @param categoria "Taller" para /register-workshop. Si se omite, devuelve todo
  *                  lo que NO es taller, que es lo que muestra /register-event.
  */
-export function opcionesDeRegistro(categoria?: string): OpcionRegistro[] {
+export function opcionesDeRegistro(categoria?: Categoria): OpcionRegistro[] {
     return proximos
         .filter(registroVigente)
         .filter((evento) =>
-            categoria
-                ? evento.category.toLowerCase() === categoria.toLowerCase()
-                : evento.category.toLowerCase() !== "taller",
+            categoria ? evento.category === categoria : evento.category !== "Taller",
         )
         .map((evento) => ({ valor: slug(evento.title), etiqueta: evento.title }))
 }
