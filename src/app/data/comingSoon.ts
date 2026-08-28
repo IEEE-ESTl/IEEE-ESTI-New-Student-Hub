@@ -38,6 +38,7 @@ export type Proximo = Evento & {
 }
 
 export const proximos: Proximo[] = [
+    
 ]
 
 /**
@@ -98,6 +99,51 @@ export function slug(titulo: string): string {
         .replace(/\p{Diacritic}/gu, "")
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "")
+}
+
+/**
+ * Revisa que no haya dos eventos que se pisen entre si.
+ *
+ * Dos problemas distintos, ambos silenciosos si nadie avisa:
+ *
+ *   - Titulos que producen el mismo identificador. Como el identificador se
+ *     deriva del titulo, dos eventos llamados igual guardan el mismo valor en la
+ *     base y en el dashboard es imposible saber a cual se inscribio cada quien.
+ *   - `id` repetidos. React los usa como clave de lista y se comporta raro al
+ *     ordenar o filtrar.
+ *
+ * Solo corre en desarrollo: en produccion no tiene a quien avisarle, y el aviso
+ * es para quien edita los datos, no para el visitante.
+ */
+function revisarDuplicados(): void {
+    const porSlug = new Map<string, string[]>()
+    const porId = new Map<number, number>()
+
+    for (const evento of proximos) {
+        const clave = slug(evento.title)
+        porSlug.set(clave, [...(porSlug.get(clave) ?? []), evento.title])
+        porId.set(evento.id, (porId.get(evento.id) ?? 0) + 1)
+    }
+
+    for (const [clave, titulos] of porSlug) {
+        if (titulos.length > 1) {
+            console.warn(
+                `[comingSoon.ts] ${titulos.length} eventos generan el identificador "${clave}": ` +
+                `${titulos.join(", ")}. En el dashboard no se podra distinguir a cual se inscribio ` +
+                `cada persona. Cambia el titulo de uno de ellos.`,
+            )
+        }
+    }
+
+    for (const [id, veces] of porId) {
+        if (veces > 1) {
+            console.warn(`[comingSoon.ts] El id ${id} esta repetido ${veces} veces. Usa uno distinto por evento.`)
+        }
+    }
+}
+
+if (process.env.NODE_ENV !== "production") {
+    revisarDuplicados()
 }
 
 /**
