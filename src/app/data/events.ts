@@ -20,6 +20,7 @@
  */
 export const CATEGORIAS = [
     "Taller",
+    "Curso",
     "Hackathon",
     "Congreso",
     "Conferencia",
@@ -41,6 +42,7 @@ export type Categoria = (typeof CATEGORIAS)[number]
  */
 export const COLOR_CATEGORIA: Record<Categoria, string> = {
     Taller: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+    Curso: "bg-orange-100 text-orange-800 hover:bg-orange-200",
     Hackathon: "bg-green-100 text-green-800 hover:bg-green-200",
     Congreso: "bg-red-100 text-red-800 hover:bg-red-200",
     Conferencia: "bg-purple-100 text-purple-800 hover:bg-purple-200",
@@ -169,5 +171,5 @@ export const eventos: Evento[] = [
         category: "Hackathon",
         instructor: "Equipo IEEE ESTl",
         image: "/hackathon-frontend-2025.webp",
-    }
+    },
 ]

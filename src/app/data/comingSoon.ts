@@ -1,4 +1,4 @@
-import type { Categoria, Evento } from "./events"
+import type { Categoria, Evento } from "./events";
 
 // Proximos eventos. Esta lista es la UNICA fuente de verdad sobre lo que viene:
 // de aqui salen el anuncio en el home, la pagina /coming-soon y las opciones de
@@ -15,39 +15,38 @@ import type { Categoria, Evento } from "./events"
 // No hay que tocar JSX para ninguna de las dos cosas.
 
 export type Proximo = Evento & {
-    /** Enlace opcional de registro. Si se omite, la tarjeta no muestra boton. */
-    registerLink?: string
-    /**
-     * Si es true, el evento aparece como opcion en el formulario de registro.
-     * Sirve para anunciar algo antes de abrir las inscripciones.
-     */
-    registroAbierto?: boolean
-    /**
-     * Ultimo dia para inscribirse, en formato "AAAA-MM-DD" (por ejemplo
-     * "2027-01-10"). El dia indicado SI cuenta: cierra al terminar esa fecha.
-     *
-     * Va en un formato distinto al de `date` a proposito. `date` es texto para
-     * mostrarle a la gente ("15 de enero de 2027") y ninguna computadora puede
-     * compararlo sin adivinar; este campo es para que el sistema decida, asi que
-     * necesita un formato que se pueda comparar sin ambiguedad.
-     *
-     * Si se omite, el registro sigue abierto hasta que alguien ponga
-     * `registroAbierto: false` a mano.
-     */
-    fechaLimiteRegistro?: string
-}
+  /** Enlace opcional de registro. Si se omite, la tarjeta no muestra boton. */
+  registerLink?: string;
+  /**
+   * Si es true, el evento aparece como opcion en el formulario de registro.
+   * Sirve para anunciar algo antes de abrir las inscripciones.
+   */
+  registroAbierto?: boolean;
+  /**
+   * Ultimo dia para inscribirse, en formato "AAAA-MM-DD" (por ejemplo
+   * "2027-01-10"). El dia indicado SI cuenta: cierra al terminar esa fecha.
+   *
+   * Va en un formato distinto al de `date` a proposito. `date` es texto para
+   * mostrarle a la gente ("15 de enero de 2027") y ninguna computadora puede
+   * compararlo sin adivinar; este campo es para que el sistema decida, asi que
+   * necesita un formato que se pueda comparar sin ambiguedad.
+   *
+   * Si se omite, el registro sigue abierto hasta que alguien ponga
+   * `registroAbierto: false` a mano.
+   */
+  fechaLimiteRegistro?: string;
+};
 
 export const proximos: Proximo[] = [
-    
-]
+];
 
 /**
  * Lo usa el home para decidir si monta la seccion de proximos eventos.
  * Mientras la lista este vacia, la seccion simplemente no aparece en la landing.
  */
-export const hayProximosEventos = proximos.length > 0
+export const hayProximosEventos = proximos.length > 0;
 
-export type OpcionRegistro = { valor: string; etiqueta: string }
+export type OpcionRegistro = { valor: string; etiqueta: string };
 
 /**
  * Fecha de hoy en Hidalgo (UTC-6), como "AAAA-MM-DD".
@@ -58,10 +57,10 @@ export type OpcionRegistro = { valor: string; etiqueta: string }
  * desde 2022, asi que el -6 es estable.
  */
 function hoyEnHidalgo(): string {
-    const DESFASE_HORAS = -6
-    return new Date(Date.now() + DESFASE_HORAS * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10)
+  const DESFASE_HORAS = -6;
+  return new Date(Date.now() + DESFASE_HORAS * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
 }
 
 /**
@@ -72,9 +71,9 @@ function hoyEnHidalgo(): string {
  * ordena igual como fecha que como cadena.
  */
 export function registroVigente(evento: Proximo): boolean {
-    if (!evento.registroAbierto) return false
-    if (!evento.fechaLimiteRegistro) return true
-    return hoyEnHidalgo() <= evento.fechaLimiteRegistro
+  if (!evento.registroAbierto) return false;
+  if (!evento.fechaLimiteRegistro) return true;
+  return hoyEnHidalgo() <= evento.fechaLimiteRegistro;
 }
 
 /**
@@ -82,7 +81,9 @@ export function registroVigente(evento: Proximo): boolean {
  * Los talleres son solo para alumnos de la ESTl; el resto acepta externos.
  */
 export function rutaDeRegistro(evento: Proximo): string {
-    return evento.category === "Taller" ? "/register-workshop" : "/register-event"
+  return evento.category === "Taller"
+    ? "/register-workshop"
+    : "/register-event";
 }
 
 /**
@@ -93,12 +94,12 @@ export function rutaDeRegistro(evento: Proximo): string {
  * desincronizarse, y produce valores legibles en el dashboard.
  */
 export function slug(titulo: string): string {
-    return titulo
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/\p{Diacritic}/gu, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
+  return titulo
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 /**
@@ -116,34 +117,36 @@ export function slug(titulo: string): string {
  * es para quien edita los datos, no para el visitante.
  */
 function revisarDuplicados(): void {
-    const porSlug = new Map<string, string[]>()
-    const porId = new Map<number, number>()
+  const porSlug = new Map<string, string[]>();
+  const porId = new Map<number, number>();
 
-    for (const evento of proximos) {
-        const clave = slug(evento.title)
-        porSlug.set(clave, [...(porSlug.get(clave) ?? []), evento.title])
-        porId.set(evento.id, (porId.get(evento.id) ?? 0) + 1)
-    }
+  for (const evento of proximos) {
+    const clave = slug(evento.title);
+    porSlug.set(clave, [...(porSlug.get(clave) ?? []), evento.title]);
+    porId.set(evento.id, (porId.get(evento.id) ?? 0) + 1);
+  }
 
-    for (const [clave, titulos] of porSlug) {
-        if (titulos.length > 1) {
-            console.warn(
-                `[comingSoon.ts] ${titulos.length} eventos generan el identificador "${clave}": ` +
-                `${titulos.join(", ")}. En el dashboard no se podra distinguir a cual se inscribio ` +
-                `cada persona. Cambia el titulo de uno de ellos.`,
-            )
-        }
+  for (const [clave, titulos] of porSlug) {
+    if (titulos.length > 1) {
+      console.warn(
+        `[comingSoon.ts] ${titulos.length} eventos generan el identificador "${clave}": ` +
+          `${titulos.join(", ")}. En el dashboard no se podra distinguir a cual se inscribio ` +
+          `cada persona. Cambia el titulo de uno de ellos.`,
+      );
     }
+  }
 
-    for (const [id, veces] of porId) {
-        if (veces > 1) {
-            console.warn(`[comingSoon.ts] El id ${id} esta repetido ${veces} veces. Usa uno distinto por evento.`)
-        }
+  for (const [id, veces] of porId) {
+    if (veces > 1) {
+      console.warn(
+        `[comingSoon.ts] El id ${id} esta repetido ${veces} veces. Usa uno distinto por evento.`,
+      );
     }
+  }
 }
 
 if (process.env.NODE_ENV !== "production") {
-    revisarDuplicados()
+  revisarDuplicados();
 }
 
 /**
@@ -153,11 +156,10 @@ if (process.env.NODE_ENV !== "production") {
  *                  lo que NO es taller, que es lo que muestra /register-event.
  */
 export function opcionesDeRegistro(categoria?: Categoria): OpcionRegistro[] {
-    return proximos
-        .filter(registroVigente)
-        .filter((evento) =>
-            categoria ? evento.category === categoria : evento.category !== "Taller",
-        )
-        .map((evento) => ({ valor: slug(evento.title), etiqueta: evento.title }))
+  return proximos
+    .filter(registroVigente)
+    .filter((evento) =>
+      categoria ? evento.category === categoria : evento.category !== "Taller",
+    )
+    .map((evento) => ({ valor: slug(evento.title), etiqueta: evento.title }));
 }
-
