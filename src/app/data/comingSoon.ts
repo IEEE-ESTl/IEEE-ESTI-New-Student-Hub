@@ -35,6 +35,17 @@ export type Proximo = Evento & {
    * `registroAbierto: false` a mano.
    */
   fechaLimiteRegistro?: string;
+  /**
+   * Numero maximo de inscritos. Al alcanzarse, el registro se cierra solo.
+   *
+   * Si se omite, no hay limite.
+   *
+   * El limite se verifica en el servidor, dentro de la misma transaccion que
+   * guarda el registro. Eso importa: si dos personas envian el formulario en el
+   * mismo instante y solo queda un lugar, una entra y la otra recibe el aviso de
+   * cupo lleno. No pueden colarse las dos.
+   */
+  cupoMaximo?: number;
 };
 
 export const proximos: Proximo[] = [
@@ -100,6 +111,19 @@ export function slug(titulo: string): string {
     .replace(/\p{Diacritic}/gu, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * Cupo maximo de un evento, buscandolo por su identificador.
+ * Devuelve `null` cuando el evento no tiene limite.
+ *
+ * La usan las funciones de Convex: asi el cupo se define una sola vez, aqui en
+ * los datos, y el servidor lo lee del mismo lugar en vez de confiar en un numero
+ * que mande el navegador.
+ */
+export function cupoDe(valor: string): number | null {
+  const evento = proximos.find((e) => slug(e.title) === valor);
+  return evento?.cupoMaximo ?? null;
 }
 
 /**

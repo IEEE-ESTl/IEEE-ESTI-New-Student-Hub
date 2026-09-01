@@ -36,7 +36,10 @@ export default defineSchema({
         telefono: v.string(),
         grupo: v.string(),
         taller: v.string(),
-    }),
+    })
+        // Permite contar cuantos van inscritos a un taller sin leer la tabla
+        // completa. Lo usa el control de cupo maximo.
+        .index("by_taller", ["taller"]),
 
     // Registro a eventos (/register-event).
     eventRegistrations: defineTable({
@@ -45,7 +48,9 @@ export default defineSchema({
         telefono: v.string(),
         grupo: v.string(),
         evento: v.string(),
-    }),
+    })
+        // Mismo proposito que `by_taller`, para los eventos.
+        .index("by_evento", ["evento"]),
 
     // Sección "Queremos Conocerte" (Fase 4).
     studentInterests: defineTable({

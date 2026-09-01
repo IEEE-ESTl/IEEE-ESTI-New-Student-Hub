@@ -1,6 +1,7 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { digitos, esEmail, exigir, limpiar } from "./validaciones";
+import { cupoDe } from "../src/app/data/comingSoon";
 
 /**
  * Registra la asistencia de un alumno a un evento.
@@ -31,6 +32,20 @@ export const registrar = mutation({
         exigir(digitos(telefono) >= 10, "El teléfono debe tener al menos 10 dígitos");
         exigir(args.grupo.length > 0, "El grupo es requerido");
         exigir(args.evento.length > 0, "Debes seleccionar un evento");
+
+        // Mismo control de cupo que en talleres. Ver el comentario de
+        // `convex/workshops.ts` para el porque de hacerlo dentro de la mutation.
+        const cupo = cupoDe(args.evento);
+        if (cupo !== null) {
+            const inscritos = await ctx.db
+                .query("eventRegistrations")
+                .withIndex("by_evento", (q) => q.eq("evento", args.evento))
+                .take(cupo);
+            exigir(
+                inscritos.length < cupo,
+                "Este evento ya alcanzo su cupo maximo. Gracias por tu interes.",
+            );
+        }
 
         return await ctx.db.insert("eventRegistrations", {
             nombreCompleto,
