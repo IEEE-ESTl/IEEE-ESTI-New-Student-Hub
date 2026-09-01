@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CheckCircle, AlertCircle } from "lucide-react"
 import { montserrat } from "@/lib/fonts"
-import { useMutation } from "convex/react"
+import { useMutation, useQuery } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { opcionesDeRegistro } from "@/app/data/comingSoon"
 
@@ -49,7 +49,13 @@ export function RegistrationForm() {
 
     // Los talleres disponibles salen de los datos del evento, filtrando por
     // categoria. Sin talleres con inscripcion abierta, el registro esta cerrado.
-    const talleres = opcionesDeRegistro("Taller")
+    // `llenos` llega de Convex y es reactivo: si alguien toma el ultimo lugar
+    // mientras esta pantalla esta abierta, la opcion se marca sola como agotada.
+    const llenos = useQuery(api.cupos.llenos)
+    const talleres = opcionesDeRegistro("Taller").map((opcion) => ({
+        ...opcion,
+        agotado: llenos?.includes(opcion.valor) ?? false,
+    }))
     const registroCerrado = talleres.length === 0
 
     const validateField = (name: string, value: string): string | undefined => {
@@ -346,8 +352,13 @@ export function RegistrationForm() {
                   </SelectTrigger>
                   <SelectContent>
                     {talleres.map((opcion) => (
-                      <SelectItem key={opcion.valor} value={opcion.valor}>
+                      <SelectItem
+                        key={opcion.valor}
+                        value={opcion.valor}
+                        disabled={opcion.agotado}
+                      >
                         {opcion.etiqueta}
+                        {opcion.agotado && " — Cupo lleno"}
                       </SelectItem>
                     ))}
                   </SelectContent>

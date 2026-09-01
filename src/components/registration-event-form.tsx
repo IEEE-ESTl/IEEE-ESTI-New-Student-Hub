@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { montserrat } from "@/lib/fonts"
-import { useMutation } from "convex/react"
+import { useMutation, useQuery } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { opcionesDeRegistro } from "@/app/data/comingSoon"
 
@@ -44,7 +44,13 @@ export function RegistrationForm() {
     // Las opciones salen de los datos del evento, no de una lista escrita aqui.
     // Si no hay ninguna con inscripcion abierta, el registro esta cerrado: no
     // existe un interruptor aparte que se pueda quedar desincronizado.
-    const opciones = opcionesDeRegistro()
+    // `llenos` llega de Convex y es reactivo: si alguien toma el ultimo lugar
+    // mientras esta pantalla esta abierta, la opcion se marca sola como agotada.
+    const llenos = useQuery(api.cupos.llenos)
+    const opciones = opcionesDeRegistro().map((opcion) => ({
+        ...opcion,
+        agotado: llenos?.includes(opcion.valor) ?? false,
+    }))
     const registroCerrado = opciones.length === 0
 
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -187,8 +193,13 @@ export function RegistrationForm() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     {opciones.map((opcion) => (
-                                        <SelectItem key={opcion.valor} value={opcion.valor}>
+                                        <SelectItem
+                                            key={opcion.valor}
+                                            value={opcion.valor}
+                                            disabled={opcion.agotado}
+                                        >
                                             {opcion.etiqueta}
+                                            {opcion.agotado && " — Cupo lleno"}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
