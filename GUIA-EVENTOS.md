@@ -75,7 +75,7 @@ Declarados en `src/app/data/events.ts`, en `export type Evento`.
 Si omites cualquiera, el proyecto no compila. Es intencional: un evento sin
 fecha o sin lugar no sirve publicado.
 
-### Opcionales (3)
+### Opcionales (4)
 
 Solo existen en `comingSoon.ts`, porque solo tienen sentido para algo que aún
 no ocurre.
@@ -85,6 +85,7 @@ no ocurre.
 | `registroAbierto` | `true` lo pone en el formulario. Sin él, se anuncia sin inscripción |
 | `fechaLimiteRegistro` | `"AAAA-MM-DD"`. Al pasar ese día, el registro se cierra solo |
 | `registerLink` | Manda a una página externa en vez de al formulario propio |
+| `cupoMaximo` | Número de lugares. Al llenarse, el registro se cierra solo |
 
 ### Plantilla para copiar
 
@@ -101,6 +102,7 @@ no ocurre.
         image: "/tallerGit.webp",
         registroAbierto: true,
         fechaLimiteRegistro: "2027-03-01",
+        cupoMaximo: 30,
     },
 ```
 
@@ -175,7 +177,7 @@ alumnos, hay que ajustar `rutaDeRegistro` y `opcionesDeRegistro` en
 | **1. No existe** | No está escrito | — | — | — | — |
 | **2. Anunciado** | En `comingSoon.ts`, sin `registroAbierto` | Sí | Sí | — | — |
 | **3. Inscripción abierta** | `registroAbierto: true`, fecha vigente o sin fecha | Sí | Sí | Sí | — |
-| **4. Inscripción cerrada** | `registroAbierto: true` + fecha límite vencida | Sí | Sí | — | — |
+| **4. Inscripción cerrada** | Fecha límite vencida **o** cupo lleno | Sí | Sí | — | — |
 | **5. Finalizado** | Movido a `events.ts` | — | — | — | Sí |
 
 Los estados 2 y 4 se ven igual para el visitante, pero significan cosas
@@ -193,11 +195,30 @@ Con la lista vacía, la sección desaparece y `/coming-soon` muestra un mensaje.
 
 **Abrir inscripciones (2 → 3).** Agrega `registroAbierto: true`.
 
-**Cerrar inscripciones (3 → 4).** Dos formas:
+**Cerrar inscripciones (3 → 4).** Tres formas, y las dos primeras son
+automáticas:
 
-- *Automática*: `fechaLimiteRegistro: "2027-03-01"`. Se cierra solo al terminar
-  ese día. Es la recomendada: no depende de que alguien se acuerde.
-- *Manual*: `registroAbierto: false`. Sirve para cerrar antes de lo previsto.
+- *Por fecha*: `fechaLimiteRegistro: "2027-03-01"`. Se cierra al terminar ese día.
+- *Por cupo*: `cupoMaximo: 30`. Se cierra al llegar al lugar 30.
+- *Manual*: `registroAbierto: false`. Para cerrar antes de lo previsto.
+
+Las automáticas son preferibles: no dependen de que alguien se acuerde.
+
+### Cómo funciona el cupo
+
+Agregas `cupoMaximo: 30` y listo. Si lo omites, no hay límite.
+
+En el formulario, al llenarse el cupo la opción aparece **deshabilitada con
+"— Cupo lleno"**, y se marca sola en las pantallas que ya estaban abiertas, sin
+que nadie recargue.
+
+El límite se verifica **en el servidor, dentro de la misma transacción que
+guarda el registro**. Eso importa: si dos personas envían el formulario en el
+mismo instante y solo queda un lugar, una entra y la otra recibe el aviso de
+cupo lleno. No pueden colarse las dos.
+
+Para ampliar el cupo, sube el número y guarda. Para reducirlo por debajo de los
+ya inscritos, nadie pierde su lugar: simplemente no entran más.
 
 **Archivar (4 → 5).** Tres pasos:
 
@@ -284,6 +305,7 @@ no choque con los existentes.
 | Ya pueden inscribirse | `registroAbierto: true` |
 | Anunciar sin abrir cupos | omite `registroAbierto` |
 | Hay fecha de cierre | `fechaLimiteRegistro: "AAAA-MM-DD"` |
+| Hay lugares limitados | `cupoMaximo: 30` |
 | El registro lo lleva alguien más | `registerLink: "https://..."` |
 
 ### 5. Verifica, en este orden
@@ -340,7 +362,18 @@ repetidos.
 /dashboard
 ```
 
-Cuatro pestañas, búsqueda, orden por columna y exportación.
+Cuatro pestañas, búsqueda, orden por columna y dos formas de exportar:
+
+- **CSV** — descarga un archivo
+- **Sheets** — escribe las filas en la hoja de Google del equipo, en la pestaña
+  que le corresponde. Reemplaza el contenido en cada envío: la hoja refleja el
+  estado actual, no un histórico. Si filtraste con la búsqueda, exporta solo lo
+  filtrado.
+
+**Las tablas se actualizan solas.** Si alguien se inscribe mientras tienes el
+panel abierto, la fila aparece sin que recargues. Para verlo, ten el panel en
+una ventana y el formulario en otra, lado a lado: si navegas de una página a
+otra en la misma pestaña, cada regreso es una carga nueva y no se aprecia.
 
 **Desde la terminal**, para ver los datos crudos:
 
@@ -369,6 +402,7 @@ bunx convex dashboard
 | `Failed to load chunk` | Caché rancia (ver abajo) |
 | Imagen rota | La ruta lleva `/public` de más, o no coinciden las mayúsculas |
 | "Registro Cerrado" sin esperarlo | Ningún evento de esa categoría tiene inscripción vigente |
+| Una opción dice "Cupo lleno" | Se alcanzó su `cupoMaximo`. Súbelo si quieres abrir más lugares |
 
 ### Caché rancia
 
@@ -389,7 +423,7 @@ archivos viejos.
 
 ```
 Anunciar     -> agregar objeto a comingSoon.ts con registroAbierto: true
-Cerrar cupos -> fechaLimiteRegistro, o registroAbierto: false
+Cerrar cupos -> fechaLimiteRegistro, cupoMaximo, o registroAbierto: false
 Archivar     -> mover a events.ts y borrar los 3 campos opcionales
 ```
 
