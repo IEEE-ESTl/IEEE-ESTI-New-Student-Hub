@@ -11,7 +11,9 @@ import {
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ArrowDown, ArrowUp, ArrowUpDown, Download, Search } from "lucide-react"
+import { ArrowDown, ArrowUp, ArrowUpDown, Download, Loader2, Search, Sheet } from "lucide-react"
+import { useAction } from "convex/react"
+import { api } from "../../../convex/_generated/api"
 import { montserrat } from "@/lib/fonts"
 
 export type Columna<T> = {
@@ -28,11 +30,15 @@ type Props<T> = {
     columnas: Columna<T>[]
     /** Nombre base del archivo CSV, sin extension. */
     nombreArchivo: string
+    /** Nombre de la pestana donde se escribe en Google Sheets. */
+    pestana: string
     /** Que decir cuando no hay ni una fila. */
     vacio: string
 }
 
 const POR_PAGINA = 15
+
+type Aviso = { tipo: "ok" | "error"; texto: string; url?: string }
 
 /**
  * Escapa un campo para CSV.
@@ -48,10 +54,14 @@ function escaparCsv(valor: string): string {
     return valor
 }
 
-export default function TablaDatos<T>({ filas, columnas, nombreArchivo, vacio }: Props<T>) {
+export default function TablaDatos<T>({ filas, columnas, nombreArchivo, pestana, vacio }: Props<T>) {
     const [busqueda, setBusqueda] = useState("")
     const [orden, setOrden] = useState<{ indice: number; asc: boolean } | null>(null)
     const [pagina, setPagina] = useState(0)
+    const [enviando, setEnviando] = useState(false)
+    const [aviso, setAviso] = useState<Aviso | null>(null)
+
+    const exportarAHoja = useAction(api.googleSheets.exportar)
 
     // Se precalculan los textos de cada celda una sola vez: los usan la
     // busqueda, el ordenamiento, el render y la exportacion.
@@ -117,6 +127,39 @@ export default function TablaDatos<T>({ filas, columnas, nombreArchivo, vacio }:
         URL.revokeObjectURL(url)
     }
 
+    /**
+     * Manda a Google Sheets lo mismo que se ve en pantalla.
+     *
+     * Las filas se arman aqui y viajan ya formateadas: asi la hoja refleja
+     * exactamente las columnas del panel, sin definirlas por segunda vez en el
+     * servidor donde se podrian desincronizar.
+     */
+    const aSheets = async () => {
+        setEnviando(true)
+        setAviso(null)
+        try {
+            const resultado = await exportarAHoja({
+                pestana,
+                filas: [columnas.map((c) => c.titulo), ...ordenadas.map((i) => textos[i])],
+            })
+            setAviso({
+                tipo: "ok",
+                texto: `${resultado.filas} registros enviados a la hoja.`,
+                url: resultado.url,
+            })
+        } catch (fallo) {
+            console.error("Error al exportar a Sheets:", fallo)
+            const mensaje = fallo instanceof Error ? fallo.message : ""
+            const limpio = mensaje.split("Uncaught Error:").pop()?.split(String.fromCharCode(10))[0]?.trim()
+            setAviso({
+                tipo: "error",
+                texto: limpio && limpio.length < 300 ? limpio : "No se pudo exportar a la hoja.",
+            })
+        } finally {
+            setEnviando(false)
+        }
+    }
+
     if (filas === undefined) {
         return (
             <p className={`${montserrat.className} py-12 text-center text-muted-foreground`}>
@@ -157,8 +200,48 @@ export default function TablaDatos<T>({ filas, columnas, nombreArchivo, vacio }:
                         <Download className="mr-1 h-4 w-4" />
                         CSV
                     </Button>
+                    <Button
+                        type="button"
+                        onClick={aSheets}
+                        disabled={ordenadas.length === 0 || enviando}
+                        className="cursor-pointer bg-[#0371a4] text-white hover:bg-[#0371a4]/80"
+                    >
+                        {enviando ? (
+                            <>
+                                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                                Enviando…
+                            </>
+                        ) : (
+                            <>
+                                <Sheet className="mr-1 h-4 w-4" />
+                                Sheets
+                            </>
+                        )}
+                    </Button>
                 </div>
             </div>
+
+            {aviso && (
+                <div
+                    className={`mb-4 rounded-md border p-3 text-sm ${
+                        aviso.tipo === "ok"
+                            ? "border-[#0371a4]/40 bg-[#0371a4]/10 text-[#0371a4]"
+                            : "border-destructive/50 bg-destructive/10 text-destructive"
+                    }`}
+                >
+                    {aviso.texto}{" "}
+                    {aviso.url && (
+                        <a
+                            href={aviso.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline underline-offset-2"
+                        >
+                            Abrir la hoja
+                        </a>
+                    )}
+                </div>
+            )}
 
             <div className="overflow-x-auto rounded-lg border">
                 <Table>

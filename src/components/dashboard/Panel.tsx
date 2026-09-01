@@ -120,6 +120,7 @@ function PanelDatos() {
                         filas={intereses}
                         columnas={columnasIntereses}
                         nombreArchivo="queremos-conocerte"
+                        pestana="Queremos Conocerte"
                         vacio="Todavía nadie ha respondido la encuesta."
                     />
                 </TabsContent>
@@ -129,6 +130,7 @@ function PanelDatos() {
                         filas={solicitudes}
                         columnas={columnasSolicitudes}
                         nombreArchivo="solicitudes-union"
+                        pestana="Únete a la rama"
                         vacio="Todavía no hay solicitudes para unirse."
                     />
                 </TabsContent>
@@ -138,6 +140,7 @@ function PanelDatos() {
                         filas={talleres}
                         columnas={columnasTalleres}
                         nombreArchivo="registros-talleres"
+                        pestana="Talleres"
                         vacio="Todavía no hay registros a talleres."
                     />
                 </TabsContent>
@@ -147,6 +150,7 @@ function PanelDatos() {
                         filas={eventos}
                         columnas={columnasEventos}
                         nombreArchivo="registros-eventos"
+                        pestana="Eventos"
                         vacio="Todavía no hay registros a eventos."
                     />
                 </TabsContent>
