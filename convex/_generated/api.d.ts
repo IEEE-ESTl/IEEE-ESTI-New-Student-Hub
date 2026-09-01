@@ -13,6 +13,7 @@ import type * as auth from "../auth.js";
 import type * as cupos from "../cupos.js";
 import type * as emails_joinRequest from "../emails/joinRequest.js";
 import type * as events from "../events.js";
+import type * as googleSheets from "../googleSheets.js";
 import type * as health from "../health.js";
 import type * as http from "../http.js";
 import type * as joinRequests from "../joinRequests.js";
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   cupos: typeof cupos;
   "emails/joinRequest": typeof emails_joinRequest;
   events: typeof events;
+  googleSheets: typeof googleSheets;
   health: typeof health;
   http: typeof http;
   joinRequests: typeof joinRequests;
