@@ -768,34 +768,51 @@ es irrelevante. Si algun dia importa, se puede mover el provider al segmento del
 
 **Rama sugerida:** `feat/resend-domain-update`
 
-### Por qué va al final
+### Resultado: terminada el 2026-09-01
 
-Es la única fase que depende de algo fuera del código: que `ieee-estl.com` termine de
-configurarse y que la mesa directiva defina a qué correo deben llegar las solicitudes. Si esas
-dos cosas se resuelven antes, la fase puede adelantarse sin afectar a ninguna otra.
+No hubo cambios de codigo. La Fase 3 ya habia dejado remitente y destinatarios
+leyendose de variables de entorno, asi que esta fase fue solo configuracion.
 
-Gracias al trabajo hecho en la Fase 3, esto ya **no es un cambio de código**: los valores viven
-en variables de entorno de Convex.
+**Configuracion aplicada** (en el entorno de Convex, no en el repo):
 
-### Cambios
+```
+RESEND_API_KEY            clave con permiso de envio, limitada a ieee-estl.com
+JOIN_REQUEST_FROM         IEEE ESTl <noreply@ieee-estl.com>
+JOIN_REQUEST_RECIPIENTS   uaehestlieee@gmail.com
+```
 
-1. Verificar `ieee-estl.com` en el panel de Resend (agregar los registros DNS que Resend indique
-   y esperar la propagación).
-2. `bunx convex env set JOIN_REQUEST_FROM "IEEE Student Branch - ESTl <noreply@ieee-estl.com>"`
-3. `bunx convex env set JOIN_REQUEST_RECIPIENTS "<correo definido>"`
-4. Enviar una solicitud de prueba y confirmar que llega.
-5. Quitar del código los valores default provisionales, que a esa altura ya son correos de
-   personas fuera de la mesa directiva.
+**Dominio.** `ieee-estl.com` quedo verificado en Resend con cuatro registros DNS
+en Cloudflare: DKIM (`resend._domainkey`), MX y SPF (ambos en `send`), y DMARC
+(`_dmarc`, con `p=none` para observar sin rechazar).
 
-### Commit sugerido
+**Obstaculo que aparecio.** El dominio traia registros NS heredados que delegaban
+`_domainkey` y `_dmarc` a `dns-expired.com`. Una delegacion NS hace que Cloudflare
+deje de responder por todo lo que cuelga de ese nombre, asi que el registro DKIM
+se podia crear y aun asi nadie lo leeria: la verificacion habria fallado sin
+explicacion. Hubo que borrar esos cuatro NS antes de agregar los de Resend.
 
-1. `chore(email): drop provisional default recipients now set via env`
-   → `convex/emails/joinRequest.ts`
+**Verificado.** Envio real de una solicitud de union: `correoEnviado: true`, la
+solicitud guardada en Convex con los acentos intactos y sin advertencias en los
+logs.
 
-### Lo que necesito de ti
+### Pendiente al desplegar
 
-- Aviso de que el dominio quedó configurado.
-- El correo destinatario definitivo.
+`SITE_URL` en el entorno de Convex apunta a `http://localhost:3000`. **Hay que
+cambiarla al dominio real** o la autenticacion del panel falla en produccion:
+
+```bash
+npx convex env set SITE_URL https://ieee-estl.com
+```
+
+### Notas sobre las cuentas
+
+- `noreply@ieee-estl.com` no es un buzon: nadie lee lo que se responda ahi. El
+  correo del solicitante viene dentro del mensaje y en el panel.
+- La cuenta de Resend vive en `uaehestlieee@gmail.com` y el Cloudflare en una
+  cuenta personal distinta. Conviene que mas de una persona tenga acceso a ambas:
+  es el mismo patron que ya costo Supabase, Clerk y Resend una vez.
+
+---
 
 ---
 
