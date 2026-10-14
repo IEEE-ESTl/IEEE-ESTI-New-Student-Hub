@@ -1,7 +1,7 @@
 import { mutation } from "./_generated/server";
-import { v } from "convex/values";
-import { digitos, esEmailUaeh, exigir, limpiar } from "./validaciones";
-import { cupoDe } from "../src/app/data/comingSoon";
+import { ConvexError, v } from "convex/values";
+import { esEmailUaeh, esNumeroCuenta, exigir, limpiar } from "./validaciones";
+import { cupoDe, tituloDe } from "../src/app/data/comingSoon";
 
 /**
  * Registra a un alumno en un taller.
@@ -14,7 +14,7 @@ export const registrar = mutation({
     args: {
         nombreCompleto: v.string(),
         email: v.string(),
-        telefono: v.string(),
+        numeroCuenta: v.string(),
         grupo: v.string(),
         taller: v.string(),
     },
@@ -22,13 +22,36 @@ export const registrar = mutation({
     handler: async (ctx, args) => {
         const nombreCompleto = limpiar(args.nombreCompleto);
         const email = limpiar(args.email).toLowerCase();
-        const telefono = limpiar(args.telefono);
+        const numeroCuenta = limpiar(args.numeroCuenta);
 
         exigir(nombreCompleto.length >= 3, "El nombre completo debe tener al menos 3 caracteres");
         exigir(esEmailUaeh(email), "El correo debe ser institucional de la UAEH (@uaeh.edu.mx)");
-        exigir(digitos(telefono) >= 8, "El teléfono debe tener al menos 8 dígitos");
+        exigir(esNumeroCuenta(numeroCuenta), "El número de cuenta son 6 dígitos, sin espacios");
         exigir(args.grupo.length > 0, "El grupo es requerido");
         exigir(args.taller.length > 0, "El taller es requerido");
+
+        // Un taller por alumno.
+        //
+        // Va antes del cupo porque es el aviso mas util: a quien ya tiene lugar
+        // no le sirve enterarse de que el taller se lleno.
+        //
+        // La busqueda es por indice, no recorriendo la tabla: con el cupo lleno
+        // son 140 registros, y leerlos todos en cada intento de alta se nota.
+        const previo = await ctx.db
+            .query("workshopRegistrations")
+            .withIndex("by_numeroCuenta", (q) => q.eq("numeroCuenta", numeroCuenta))
+            .first();
+
+        if (previo !== null) {
+            // Dos mensajes distintos porque son dos situaciones distintas: una
+            // es un clic repetido, la otra es alguien que quiere cambiarse o no
+            // sabia de la regla. Nombrar el taller le evita adivinar.
+            throw new ConvexError(
+                previo.taller === args.taller
+                    ? `Este número de cuenta ya está registrado en "${tituloDe(args.taller)}". No hace falta inscribirse otra vez.`
+                    : `Este número de cuenta ya está registrado en "${tituloDe(previo.taller)}". Solo puedes inscribirte a un taller. Si necesitas cambiarte, escríbenos.`,
+            );
+        }
 
         // Control de cupo. Va DENTRO de la mutation a proposito: las mutations de
         // Convex son transacciones, asi que contar e insertar ocurre sin que nadie
@@ -52,7 +75,7 @@ export const registrar = mutation({
         return await ctx.db.insert("workshopRegistrations", {
             nombreCompleto,
             email,
-            telefono,
+            numeroCuenta,
             grupo: args.grupo,
             taller: args.taller,
         });

@@ -33,13 +33,19 @@ export default defineSchema({
     workshopRegistrations: defineTable({
         nombreCompleto: v.string(),
         email: v.string(),
-        telefono: v.string(),
+        // Numero de cuenta de la UAEH, 6 digitos. Sustituyo al telefono: es el
+        // identificador que la universidad ya le asigna a cada alumno, asi que
+        // sirve para saber si alguien se esta inscribiendo dos veces.
+        numeroCuenta: v.string(),
         grupo: v.string(),
         taller: v.string(),
     })
         // Permite contar cuantos van inscritos a un taller sin leer la tabla
         // completa. Lo usa el control de cupo maximo.
-        .index("by_taller", ["taller"]),
+        .index("by_taller", ["taller"])
+        // Permite saber si una cuenta ya tiene taller sin recorrer la tabla.
+        // Lo usa la regla de un taller por alumno.
+        .index("by_numeroCuenta", ["numeroCuenta"]),
 
     // Registro a eventos (/register-event).
     eventRegistrations: defineTable({

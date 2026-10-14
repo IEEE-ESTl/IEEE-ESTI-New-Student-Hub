@@ -228,6 +228,20 @@ export function cupoDe(valor: string): number | null {
 }
 
 /**
+ * Titulo legible de un evento a partir de su identificador.
+ *
+ * No filtra por inscripcion abierta, al reves que `opcionesDeRegistro`: se usa
+ * para decirle a un alumno en que taller quedo inscrito, y ese taller pudo
+ * haberse cerrado o llenado despues de que se registro.
+ *
+ * Si el evento ya no esta en la lista devuelve el identificador tal cual, que
+ * sigue siendo legible ("desarrollo-en-unity") y es mejor que no decir nada.
+ */
+export function tituloDe(valor: string): string {
+  return proximos.find((e) => slug(e.title) === valor)?.title ?? valor;
+}
+
+/**
  * Revisa que no haya dos eventos que se pisen entre si.
  *
  * Dos problemas distintos, ambos silenciosos si nadie avisa:
