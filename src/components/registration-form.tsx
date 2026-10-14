@@ -11,13 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CheckCircle, AlertCircle } from "lucide-react"
 import { montserrat } from "@/lib/fonts"
 import { useMutation, useQuery } from "convex/react"
+import { ConvexError } from "convex/values"
 import { api } from "../../convex/_generated/api"
 import { opcionesDeRegistro } from "@/app/data/comingSoon"
 
 interface FormData {
     nombreCompleto: string
     email: string
-    telefono: string
+    numeroCuenta: string
     grupo: string
     taller: string
 }
@@ -25,16 +26,70 @@ interface FormData {
 interface FormErrors {
     nombreCompleto?: string
     email?: string
-    telefono?: string
+    numeroCuenta?: string
     grupo?: string
     taller?: string
+}
+
+const GRUPOS = ["101", "102", "301", "302", "501", "502", "701", "702"]
+
+/**
+ * Un campo del formulario, con su numero y su pista.
+ *
+ * Existe para que los cinco campos se vean iguales sin repetir el mismo bloque
+ * cinco veces: antes cada uno traia su propia copia del label, el borde de
+ * error y el mensaje, y bastaba con tocar uno para que dejara de parecerse a
+ * los demas.
+ */
+function Campo({
+    numero,
+    etiqueta,
+    pista,
+    htmlFor,
+    error,
+    children,
+}: {
+    numero: number
+    etiqueta: string
+    pista: string
+    htmlFor: string
+    error?: string
+    children: React.ReactNode
+}) {
+    return (
+        <div className="space-y-2">
+            <div className="flex items-baseline justify-between gap-3">
+                <Label
+                    htmlFor={htmlFor}
+                    className={`${montserrat.className} text-sm font-semibold text-foreground`}
+                >
+                    <span className="mr-1.5 text-[#0371a4]">{numero}.</span>
+                    {etiqueta}
+                </Label>
+                <span
+                    className={`${montserrat.className} shrink-0 text-[11px] uppercase tracking-wide text-muted-foreground`}
+                >
+                    {pista}
+                </span>
+            </div>
+
+            {children}
+
+            {error && (
+                <div className="flex items-center gap-1 text-sm text-destructive">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    {error}
+                </div>
+            )}
+        </div>
+    )
 }
 
 export function RegistrationForm() {
     const [formData, setFormData] = useState<FormData>({
         nombreCompleto: "",
         email: "",
-        telefono: "",
+        numeroCuenta: "",
         grupo: "",
         taller: "",
     })
@@ -65,28 +120,29 @@ export function RegistrationForm() {
                 if (value.trim().length < 3) return "El nombre completo debe tener al menos 3 caracteres"
                 if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) return "El nombre solo puede contener letras y espacios"
                 return undefined
-            
+
             case "email":
-                if (!value.trim()) return "El email es requerido"
-                const emailRegex = /^[^\s@]+@uaeh\.edu\.mx$/
-                if (!emailRegex.test(value)) return "El email no es válido, por favor ingresa un email de la UAEH"
+                if (!value.trim()) return "El correo es requerido"
+                if (!/^[^\s@]+@uaeh\.edu\.mx$/.test(value)) return "Usa tu correo institucional (@uaeh.edu.mx)"
                 return undefined
-            
-            case "telefono":
-                if (!value.trim()) return "El número de teléfono es requerido"
-                const telefonoRegex = /^[\d\s\-+$$$$]+$/;
-                if (!telefonoRegex.test(value)) return "El número de teléfono no es válido"
-                if (value.replace(/\D/g, "").length < 8) return "El número de teléfono debe tener al menos 8 dígitos"
+
+            // Solo se valida la longitud, no el prefijo: los primeros digitos
+            // indican la generacion, asi que exigir "49" dejaria fuera a quien
+            // venga de una generacion anterior. Misma regla que en el servidor.
+            case "numeroCuenta":
+                if (!value.trim()) return "El número de cuenta es requerido"
+                if (!/^\d+$/.test(value)) return "Solo números, sin espacios ni letras"
+                if (value.length !== 6) return "El número de cuenta son 6 dígitos"
                 return undefined
-            
+
             case "grupo":
                 if (!value.trim()) return "El grupo es requerido"
                 return undefined
-            
+
             case "taller":
                 if (!value.trim()) return "El taller es requerido"
                 return undefined
-            
+
             default:
                 return undefined
         }
@@ -106,23 +162,23 @@ export function RegistrationForm() {
     const validateForm = (): boolean => {
         const newErrors: FormErrors = {}
         let isValid = true
-    
+
         Object.keys(formData).forEach((key) => {
-          const error = validateField(key, formData[key as keyof FormData])
-          if (error) {
-            newErrors[key as keyof FormErrors] = error
-            isValid = false
-          }
+            const error = validateField(key, formData[key as keyof FormData])
+            if (error) {
+                newErrors[key as keyof FormErrors] = error
+                isValid = false
+            }
         })
-    
+
         setErrors(newErrors)
         setTouched(Object.keys(formData).reduce((acc, key) => ({ ...acc, [key]: true }), {}))
         return isValid
-      }
+    }
 
-      const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-    
+
         if (!validateForm()) return
 
         setIsSubmitting(true)
@@ -135,7 +191,7 @@ export function RegistrationForm() {
             setFormData({
                 nombreCompleto: "",
                 email: "",
-                telefono: "",
+                numeroCuenta: "",
                 grupo: "",
                 taller: "",
             })
@@ -143,253 +199,229 @@ export function RegistrationForm() {
             setTouched({})
         } catch (error) {
             console.error("Error al registrar el taller:", error)
+
+            // El servidor manda los motivos que el alumno puede resolver —ya
+            // estas inscrito en otro taller, el cupo se lleno— dentro de un
+            // ConvexError. Mostrar siempre el texto generico escondia justo lo
+            // que hacia falta leer.
+            const motivo = error instanceof ConvexError ? String(error.data) : null
             setErrorEnvio(
-                "No pudimos registrar tu inscripción. Revisa tu conexión e inténtalo de nuevo."
+                motivo ??
+                    "No pudimos registrar tu inscripción. Revisa tu conexión e inténtalo de nuevo.",
             )
         } finally {
             setIsSubmitting(false)
         }
-      }
+    }
 
-      const getFieldStatus = (fieldName: string) => {
+    const getFieldStatus = (fieldName: string) => {
         const hasError = errors[fieldName as keyof FormErrors]
         const isTouched = touched[fieldName]
         const hasValue = formData[fieldName as keyof FormData]
-    
+
         if (hasError && isTouched) return "error"
         if (!hasError && isTouched && hasValue) return "success"
         return "default"
-      }
+    }
 
-      if (isSubmitted) {
+    /** Borde rojo o verde segun como vaya el campo. */
+    const borde = (campo: string) =>
+        getFieldStatus(campo) === "error"
+            ? "border-destructive focus:ring-destructive"
+            : getFieldStatus(campo) === "success"
+              ? "border-accent focus:ring-accent"
+              : ""
+
+    const errorDe = (campo: keyof FormErrors) =>
+        touched[campo] ? errors[campo] : undefined
+
+    if (isSubmitted) {
         return (
-          <Card className="shadow-lg">
-            <CardContent className="pt-6">
-              <div className="text-center py-8">
-                <CheckCircle className="w-16 h-16 text-[#0371a4] mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">¡Registro Exitoso!</h3>
-                <p className="text-muted-foreground">
-                  Tu inscripción ha sido procesada correctamente. Te contactaremos pronto.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+            <Card className="shadow-lg">
+                <CardContent className="pt-6">
+                    <div className="text-center py-8">
+                        <CheckCircle className="w-16 h-16 text-[#0371a4] mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-foreground mb-2">¡Registro Exitoso!</h3>
+                        <p className="text-muted-foreground">
+                            Tu inscripción ha sido procesada correctamente. Te contactaremos pronto.
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
         )
-      }
+    }
 
-      if (registroCerrado) {
+    if (registroCerrado) {
         return (
-          <Card className="shadow-lg border-t-4 border-destructive">
-            <CardContent className="pt-6">
-              <div className="text-center py-8">
-                <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">Registro Cerrado</h3>
-                <p className="text-muted-foreground">
-                  Por ahora no hay talleres con inscripción abierta. Atento a nuestras redes
-                  para los próximos.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+            <Card className="shadow-lg border-t-4 border-destructive">
+                <CardContent className="pt-6">
+                    <div className="text-center py-8">
+                        <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-foreground mb-2">Registro Cerrado</h3>
+                        <p className="text-muted-foreground">
+                            Por ahora no hay talleres con inscripción abierta. Atento a nuestras redes
+                            para los próximos.
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
         )
-      }
+    }
 
-      return (
+    return (
         <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className={`${montserrat.className} text-xl text-center text-foreground`}>Formulario de Registro</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="nombreCompleto" className={`${montserrat.className} text-sm font-medium`}>
-                  Nombre Completo *
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="nombreCompleto"
-                    type="text"
-                    value={formData.nombreCompleto}
-                    onChange={(e) => handleInputChange("nombreCompleto", e.target.value)}
-                    onBlur={() => handleBlur("nombreCompleto")}
-                    className={`${
-                      getFieldStatus("nombreCompleto") === "error"
-                        ? "border-destructive focus:ring-destructive"
-                        : getFieldStatus("nombreCompleto") === "success"
-                          ? "border-accent focus:ring-accent"
-                          : ""
-                    }`}
-                    placeholder="Ingresa tu nombre completo"
-                  />
-                  {getFieldStatus("nombreCompleto") === "success" && (
-                    <CheckCircle className="absolute right-3 top-3 w-4 h-4 text-accent" />
-                  )}
-                </div>
-                {errors.nombreCompleto && touched.nombreCompleto && (
-                  <div className="flex items-center gap-1 text-sm text-destructive">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.nombreCompleto}
-                  </div>
-                )}
-              </div>
-    
-              <div className="space-y-2">
-                <Label htmlFor="email" className={`${montserrat.className} text-sm font-medium`}>
-                  Email *
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    onBlur={() => handleBlur("email")}
-                    className={`${
-                      getFieldStatus("email") === "error"
-                        ? "border-destructive focus:ring-destructive"
-                        : getFieldStatus("email") === "success"
-                          ? "border-accent focus:ring-accent"
-                          : ""
-                    }`}
-                    placeholder="aa111111@uaeh.edu.mx"
-                  />
-                  {getFieldStatus("email") === "success" && (
-                    <CheckCircle className="absolute right-3 top-3 w-4 h-4 text-accent" />
-                  )}
-                </div>
-                {errors.email && touched.email && (
-                  <div className="flex items-center gap-1 text-sm text-destructive">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.email}
-                  </div>
-                )}
-              </div>
-    
-              <div className="space-y-2">
-                <Label htmlFor="telefono" className={`${montserrat.className} text-sm font-medium`}>
-                  Teléfono *
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="telefono"
-                    type="tel"
-                    value={formData.telefono}
-                    onChange={(e) => handleInputChange("telefono", e.target.value)}
-                    onBlur={() => handleBlur("telefono")}
-                    className={`${
-                      getFieldStatus("telefono") === "error"
-                        ? "border-destructive focus:ring-destructive"
-                        : getFieldStatus("telefono") === "success"
-                          ? "border-accent focus:ring-accent"
-                          : ""
-                    }`}
-                    placeholder="+52 123 456 7890"
-                  />
-                  {getFieldStatus("telefono") === "success" && (
-                    <CheckCircle className="absolute right-3 top-3 w-4 h-4 text-accent" />
-                  )}
-                </div>
-                {errors.telefono && touched.telefono && (
-                  <div className="flex items-center gap-1 text-sm text-destructive">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.telefono}
-                  </div>
-                )}
-              </div>
-    
-              <div className="space-y-2">
-                <Label htmlFor="grupo" className={`${montserrat.className} text-sm font-medium`}>
-                  Grupo *
-                </Label>
-                <Select value={formData.grupo} onValueChange={(value) => handleInputChange("grupo", value)}>
-                  <SelectTrigger
-                    className={`${
-                      getFieldStatus("grupo") === "error"
-                        ? "border-destructive focus:ring-destructive"
-                        : getFieldStatus("grupo") === "success"
-                          ? "border-accent focus:ring-accent"
-                          : ""
-                    }`}
-                    onBlur={() => handleBlur("grupo")}
-                  >
-                    <SelectValue placeholder="Selecciona tu grupo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="101">Grupo 101</SelectItem>
-                    <SelectItem value="102">Grupo 102</SelectItem>
-                    <SelectItem value="301">Grupo 301</SelectItem>
-                    <SelectItem value="302">Grupo 302</SelectItem>
-                    <SelectItem value="501">Grupo 501</SelectItem>
-                    <SelectItem value="502">Grupo 502</SelectItem>
-                    <SelectItem value="701">Grupo 701</SelectItem>
-                    <SelectItem value="702">Grupo 702</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.grupo && touched.grupo && (
-                  <div className="flex items-center gap-1 text-sm text-destructive">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.grupo}
-                  </div>
-                )}
-              </div>
-    
-              <div className="space-y-2">
-                <Label htmlFor="taller" className={`${montserrat.className} text-sm font-medium`}>
-                  Taller *
-                </Label>
-                <Select value={formData.taller} onValueChange={(value) => handleInputChange("taller", value)}>
-                  <SelectTrigger
-                    className={`${
-                      getFieldStatus("taller") === "error"
-                        ? "border-destructive focus:ring-destructive"
-                        : getFieldStatus("taller") === "success"
-                          ? "border-accent focus:ring-accent"
-                          : ""
-                    }`}
-                    onBlur={() => handleBlur("taller")}
-                  >
-                    <SelectValue placeholder="Selecciona un taller" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {talleres.map((opcion) => (
-                      <SelectItem
-                        key={opcion.valor}
-                        value={opcion.valor}
-                        disabled={opcion.agotado}
-                      >
-                        {opcion.etiqueta}
-                        {opcion.agotado && " — Cupo lleno"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.taller && touched.taller && (
-                  <div className="flex items-center gap-1 text-sm text-destructive">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.taller}
-                  </div>
-                )}
-              </div>
-    
-              {errorEnvio && (
-                <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                  <span>{errorEnvio}</span>
-                </div>
-              )}
+            <CardHeader>
+                <CardTitle className={`${montserrat.className} text-xl text-center text-foreground`}>
+                    Formulario de Registro
+                </CardTitle>
+                <p className={`${montserrat.className} text-center text-sm text-muted-foreground`}>
+                    Solo puedes inscribirte a un taller.
+                </p>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <Campo
+                        numero={1}
+                        etiqueta="Número de cuenta"
+                        pista="6 dígitos"
+                        htmlFor="numeroCuenta"
+                        error={errorDe("numeroCuenta")}
+                    >
+                        <Input
+                            id="numeroCuenta"
+                            // `inputMode` saca el teclado numerico en el celular,
+                            // que es desde donde se van a inscribir casi todos.
+                            inputMode="numeric"
+                            autoComplete="off"
+                            maxLength={6}
+                            value={formData.numeroCuenta}
+                            // Se descartan los caracteres que no son digitos en vez de
+                            // avisar despues: el campo solo admite numeros, asi que
+                            // vale mas impedir el error que señalarlo.
+                            onChange={(e) =>
+                                handleInputChange("numeroCuenta", e.target.value.replace(/\D/g, ""))
+                            }
+                            onBlur={() => handleBlur("numeroCuenta")}
+                            className={`${borde("numeroCuenta")} tracking-widest`}
+                            placeholder="49XXXX"
+                        />
+                    </Campo>
 
-              <Button
-                type="submit"
-                className={`${montserrat.className} w-full bg-[#0371a4] hover:bg-[#0371a4]/80 text-white cursor-pointer`}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Enviando..." : "Enviar Registro"}
-              </Button>
-            </form>
-          </CardContent>
+                    <Campo
+                        numero={2}
+                        etiqueta="Correo electrónico"
+                        pista="institucional"
+                        htmlFor="email"
+                        error={errorDe("email")}
+                    >
+                        <Input
+                            id="email"
+                            type="email"
+                            autoComplete="email"
+                            value={formData.email}
+                            onChange={(e) => handleInputChange("email", e.target.value)}
+                            onBlur={() => handleBlur("email")}
+                            className={borde("email")}
+                            placeholder="alumno@uaeh.edu.mx"
+                        />
+                    </Campo>
+
+                    <Campo
+                        numero={3}
+                        etiqueta="Nombre completo"
+                        pista="nombre y apellidos"
+                        htmlFor="nombreCompleto"
+                        error={errorDe("nombreCompleto")}
+                    >
+                        <Input
+                            id="nombreCompleto"
+                            type="text"
+                            autoComplete="name"
+                            value={formData.nombreCompleto}
+                            onChange={(e) => handleInputChange("nombreCompleto", e.target.value)}
+                            onBlur={() => handleBlur("nombreCompleto")}
+                            className={borde("nombreCompleto")}
+                            placeholder="Tu nombre y apellidos"
+                        />
+                    </Campo>
+
+                    <Campo
+                        numero={4}
+                        etiqueta="Grupo"
+                        pista="seleccionar grupo"
+                        htmlFor="grupo"
+                        error={errorDe("grupo")}
+                    >
+                        <Select
+                            value={formData.grupo}
+                            onValueChange={(value) => handleInputChange("grupo", value)}
+                        >
+                            <SelectTrigger
+                                id="grupo"
+                                className={`w-full ${borde("grupo")}`}
+                                onBlur={() => handleBlur("grupo")}
+                            >
+                                <SelectValue placeholder="Selecciona tu grupo..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {GRUPOS.map((grupo) => (
+                                    <SelectItem key={grupo} value={grupo}>
+                                        Grupo {grupo}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </Campo>
+
+                    <Campo
+                        numero={5}
+                        etiqueta="Taller"
+                        pista="seleccionar taller"
+                        htmlFor="taller"
+                        error={errorDe("taller")}
+                    >
+                        <Select
+                            value={formData.taller}
+                            onValueChange={(value) => handleInputChange("taller", value)}
+                        >
+                            <SelectTrigger
+                                id="taller"
+                                className={`w-full ${borde("taller")}`}
+                                onBlur={() => handleBlur("taller")}
+                            >
+                                <SelectValue placeholder="Selecciona un taller..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {talleres.map((opcion) => (
+                                    <SelectItem
+                                        key={opcion.valor}
+                                        value={opcion.valor}
+                                        disabled={opcion.agotado}
+                                    >
+                                        {opcion.etiqueta}
+                                        {opcion.agotado && " — Cupo lleno"}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </Campo>
+
+                    {errorEnvio && (
+                        <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                            <span>{errorEnvio}</span>
+                        </div>
+                    )}
+
+                    <Button
+                        type="submit"
+                        className={`${montserrat.className} w-full bg-[#0371a4] hover:bg-[#0371a4]/80 text-white cursor-pointer`}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? "Enviando..." : "Enviar Registro"}
+                    </Button>
+                </form>
+            </CardContent>
         </Card>
-      )
-    
-    
-    
+    )
 }

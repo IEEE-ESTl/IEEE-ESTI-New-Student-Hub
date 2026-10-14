@@ -68,9 +68,9 @@ function PanelDatos() {
 
     const columnasTalleres: Columna<NonNullable<typeof talleres>[number]>[] = [
         { titulo: "Fecha", valor: (f) => fecha(f._creationTime) },
+        { titulo: "No. de cuenta", valor: (f) => f.numeroCuenta },
         { titulo: "Nombre", valor: (f) => f.nombreCompleto },
         { titulo: "Correo", valor: (f) => f.email },
-        { titulo: "Teléfono", valor: (f) => f.telefono },
         { titulo: "Grupo", valor: (f) => f.grupo },
         { titulo: "Taller", valor: (f) => legible(f.taller) },
     ]
