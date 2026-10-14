@@ -88,7 +88,7 @@ export const proximos: Proximo[] = [
     category: "Taller",
     instructor: "AWS Student Builder Group(SBG) - UAEH",
     image: "/talleres/tallerCORE.webp",
-    registroAbierto: true,
+    registroAbierto: false,
     cupoMaximo: 25,
   },
   {
