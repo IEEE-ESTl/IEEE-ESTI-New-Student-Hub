@@ -1,3 +1,5 @@
+import { ConvexError } from "convex/values";
+
 /**
  * Helpers de validación compartidos por las funciones de Convex.
  *
@@ -42,11 +44,30 @@ export function digitos(valor: string): number {
 }
 
 /**
+ * Número de cuenta de la UAEH: exactamente 6 dígitos.
+ *
+ * Solo se valida la longitud, no el prefijo. Los primeros dígitos indican la
+ * generación (49xxxx para los de nuevo ingreso), así que exigir "49" dejaría
+ * fuera a quien venga de generaciones anteriores o de un reingreso.
+ */
+export function esNumeroCuenta(valor: string): boolean {
+    return /^\d{6}$/.test(valor);
+}
+
+/**
  * Lanza un error si la condición no se cumple.
- * El mensaje llega al cliente, así que debe ser legible para el alumno.
+ *
+ * Usa `ConvexError` y no `Error` a propósito. Convex solo le entrega al
+ * navegador el contenido de un `ConvexError`: el mensaje de un `Error` normal
+ * se censura en los despliegues de producción y al alumno le llega un
+ * "Server Error" genérico.
+ *
+ * O sea que con `Error` estos mensajes funcionaban en desarrollo y se perdían
+ * justo donde importan. Quien lea esto: el mensaje es para el alumno, escríbelo
+ * en lenguaje llano.
  */
 export function exigir(condicion: boolean, mensaje: string): void {
     if (!condicion) {
-        throw new Error(mensaje);
+        throw new ConvexError(mensaje);
     }
 }

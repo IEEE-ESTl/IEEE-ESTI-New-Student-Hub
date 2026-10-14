@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { montserrat } from "@/lib/fonts"
 import { useMutation, useQuery } from "convex/react"
+import { ConvexError } from "convex/values"
 import { api } from "../../convex/_generated/api"
 import { opcionesDeRegistro } from "@/app/data/comingSoon"
 
@@ -130,8 +131,12 @@ export function RegistrationForm() {
             setTouched({})
         } catch (error) {
             console.error("Error registro:", error)
+
+            // Los motivos que el alumno puede resolver —el cupo se lleno— viajan
+            // dentro de un ConvexError. El texto generico solo cubre lo demas.
+            const motivo = error instanceof ConvexError ? String(error.data) : null
             setErrorEnvio(
-                "No pudimos reservar tu lugar. Revisa tu conexión e inténtalo de nuevo."
+                motivo ?? "No pudimos reservar tu lugar. Revisa tu conexión e inténtalo de nuevo."
             )
         } finally {
             setIsSubmitting(false)
