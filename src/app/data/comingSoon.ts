@@ -88,7 +88,7 @@ export const proximos: Proximo[] = [
     category: "Taller",
     instructor: "AWS Student Builder Group(SBG) - UAEH",
     image: "/talleres/tallerCORE.webp",
-    registroAbierto: false,
+    registroAbierto: true,
     cupoMaximo: 25,
   },
   {
@@ -103,7 +103,7 @@ export const proximos: Proximo[] = [
     category: "Taller",
     instructor: "Dr. Ismael Domínguez",
     image: "/talleres/tallerRoblox.webp",
-    registroAbierto: false,
+    registroAbierto: true,
     cupoMaximo: 25,
   },
   {
@@ -118,7 +118,7 @@ export const proximos: Proximo[] = [
     category: "Taller",
     instructor: "Lic. Moisés Valenzuela",
     image: "/talleres/tallerUnity.webp",
-    registroAbierto: false,
+    registroAbierto: true,
     cupoMaximo: 25,
   },
   {
@@ -133,7 +133,7 @@ export const proximos: Proximo[] = [
     category: "Taller",
     instructor: "Dra. Julia Arana",
     image: "/talleres/tallerBlender.webp",
-    registroAbierto: false,
+    registroAbierto: true,
     cupoMaximo: 25,
   },
   
