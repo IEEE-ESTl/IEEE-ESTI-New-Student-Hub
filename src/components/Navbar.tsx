@@ -46,7 +46,7 @@ export default function Navbar() {
 
                     {/* Social Media Icons */}
                     <div className="flex items-center space-x-3">
-                        <Link href={'https://www.instagram.com/ieee-estl'} target="_blank" className="text-black hover:-translate-y-1 px-2 py-1 transition-all duration-300">
+                        <Link href={'https://www.instagram.com/uaehestlieee'} target="_blank" className="text-black hover:-translate-y-1 px-2 py-1 transition-all duration-300">
                             <Instagram size={20} />
                         </Link>
                         <Link href={'https://www.linkedin.com/company/ieee-estl'} target="_blank" className="text-black hover:-translate-y-1 px-2 py-1 transition-all duration-300">
