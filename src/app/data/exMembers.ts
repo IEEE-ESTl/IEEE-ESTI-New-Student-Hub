@@ -2,6 +2,7 @@ import johan from '@/assets/memberImages/johan.webp';
 import erick from '@/assets/memberImages/ErickMedelGalindo.webp';
 import mario from '@/assets/memberImages/mario.webp';
 import valeri from '@/assets/memberImages/valeri.webp';
+import paulo from '@/assets/memberImages/paulo.webp';
 
 export const exMembers = [
     {
@@ -54,6 +55,27 @@ export const exMembers = [
             {
                 name: 'Presidente',
                 description: 'Fue presidente de la rama',
+                icon: 'ieee',
+                color: 'bg-white',
+                iconColor: 'text-white',
+            },
+            {
+                name: 'Desarrollador',
+                description: 'Fue desarrollador de la rama',
+                icon: 'terminal',
+                color: 'bg-black',
+                iconColor: 'text-white',
+            }
+        ]
+    },
+    {
+        name: 'Paulo Mantilla',
+        date: 'Fue miembro desde 2024 hasta 2026',
+        image: paulo,
+        badges: [
+            {
+                name: 'Vicepresidente',
+                description: 'Fue vicepresidente de la rama',
                 icon: 'ieee',
                 color: 'bg-white',
                 iconColor: 'text-white',

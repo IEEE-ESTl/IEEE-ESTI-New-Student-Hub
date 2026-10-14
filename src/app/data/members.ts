@@ -1,5 +1,4 @@
 // src/app/data/members.ts
-import paulo from '@/assets/memberImages/paulo.webp';
 import martin from '@/assets/memberImages/martin.webp';
 import abdiel from '@/assets/memberImages/abdiel.webp';
 import ivan from '@/assets/memberImages/ivan.webp';
@@ -22,9 +21,9 @@ export const members = [
         ]
     },
     {
-        name: 'Paulo Mantilla',
+        name: 'Abdiel Avila',
         date: 'Miembro desde 2024',
-        image: paulo,
+        image: abdiel,
         badges: [
             {
                 name: 'Vicepresidente',
@@ -42,22 +41,22 @@ export const members = [
             }
         ]
     },
+    // {
+    //     name: 'Abdiel Ávila',
+    //     date: 'Miembro desde 2024',
+    //     image: abdiel,
+    //     badges: [
+    //         {
+    //             name: 'Web Master',
+    //             description: 'Web Master de la rama',
+    //             icon: 'terminal',
+    //             color: 'bg-black',
+    //             iconColor: 'text-white',
+    //         }
+    //     ]
+    // },
     {
-        name: 'Abdiel Ávila',
-        date: 'Miembro desde 2024',
-        image: abdiel,
-        badges: [
-            {
-                name: 'Web Master',
-                description: 'Web Master de la rama',
-                icon: 'terminal',
-                color: 'bg-black',
-                iconColor: 'text-white',
-            }
-        ]
-    },
-    {
-        name: 'Malkhi Lopéz',
+        name: 'Malkih Lopéz',
         date: 'Miembro desde 2025',
         image: malkhi,
         badges: [
