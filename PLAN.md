@@ -5,12 +5,24 @@
 > nuevas implementaciones.
 
 **Rama base de trabajo:** `dev`
-**Flujo:** `dev` → `feat/<nombre>` → (revisión) → merge a `dev` → *(al final de todo)* merge a `main`
+**Flujo:** `dev` → `feat/<nombre>` → (revisión) → merge a `dev` → desplegar → verificar → merge a `main`
 
-`main` **no se toca hasta que las 8 implementaciones estén terminadas.** Se integra todo en `dev`
-y se hace un solo merge a `main` al cerrar el plan. `dev` y las ramas `feat/*` sí se suben al
-remoto conforme se avanza: es el único respaldo del trabajo y da visibilidad al resto del equipo.
-No hay CI, así que ningún push dispara un deploy.
+> **Actualizado el 2026-10-14.** Mientras el plan original estaba en curso, `main` no se tocaba
+> hasta terminar las 8 fases (decisión 10). Eso ya se cumplió. **Desde que el sitio está en
+> producción la regla es otra: `main` = lo que está publicado en `ieee-estl.com`.**
+>
+> El merge a `main` va **después** de desplegar y verificar el sitio en vivo, nunca antes. Así
+> `main` nunca contiene algo que no se haya visto funcionando, y `git checkout main` + desplegar
+> es un camino de vuelta fiable si algo se rompe.
+>
+> Esto importa porque **el despliegue no lee ninguna rama**: `npx convex deploy --cmd "bun run
+> deploy"` compila los archivos que hay en el disco en ese momento. Técnicamente se puede
+> publicar desde cualquier rama, e incluso con cambios sin commitear — y entonces en producción
+> correría código que no existe en ningún sitio. Por eso: **`git status` limpio antes de cada
+> despliegue.**
+
+`dev` y las ramas `feat/*` se suben al remoto conforme se avanza: es el único respaldo del
+trabajo y da visibilidad al resto del equipo. Ningún push dispara un despliegue del sitio.
 
 ---
 
@@ -45,7 +57,19 @@ Resueltas antes de empezar. Quedan registradas aquí para no volver a abrirlas a
 | 7 | ¿Se arregla el build roto antes de la Fase 3? | **No.** Se espera a la Fase 3, que lo arregla al eliminar los archivos culpables. `main` queda sin poder desplegarse hasta entonces. |
 | 8 | ¿Se rescatan los datos históricos de Supabase? | **No. Se dan por perdidos.** Nadie conserva acceso al panel. Convex arranca vacío. |
 | 9 | ¿Se recupera la cuenta de Resend? | **No. Se crea una nueva**, cuando esté definido el correo destinatario (Fase 8). |
-| 10 | ¿Cuándo se mergea a `main`? | **Solo al terminar las 8 fases.** Hasta entonces todo se integra en `dev`, que sí se sube al remoto. |
+| 10 | ¿Cuándo se mergea a `main`? | ~~**Solo al terminar las 8 fases.**~~ **Cumplida y sustituida el 2026-10-14:** `main` pasa a significar "lo que está en producción" y se actualiza después de cada despliegue verificado. Ver la nota del encabezado. |
+
+### Decisiones posteriores al plan original
+
+Tomadas una vez el sitio ya estaba en producción. Se registran aparte para que se vea cuáles
+revisan una decisión anterior y por qué.
+
+| # | Decisión | Resolución |
+|---|---|---|
+| 12 | ¿El dashboard permite borrar? | **Sí, revisa la decisión 5.** Se añadió un botón de limpieza (Fase 10). El motivo de la decisión 5 era evitar pérdidas accidentales; se mantiene ese objetivo con otras defensas —borrado acotado al filtro, confirmación escrita y aviso explícito— en vez de prohibirlo. Sin esto, la base acumula los registros de cada semestre sin forma de vaciarla desde el panel. |
+| 13 | ¿Cómo se identifica a quien se inscribe a un taller? | **Por número de cuenta de la UAEH (6 dígitos)**, en lugar del teléfono. Es el identificador que la universidad ya asigna, así que sirve para detectar inscripciones repetidas. Se validan **solo los 6 dígitos, no el prefijo `49`**: ese prefijo indica generación y exigirlo dejaría fuera a generaciones anteriores y reingresos. |
+| 14 | ¿Un alumno puede inscribirse a varios talleres? | **No, solo a uno.** Verificado en el servidor, no en la interfaz. Se evaluó permitir combinaciones sin choque de horario (AWS es solo el día 3, Unity solo días 1 y 2) y se descartó: más código y más difícil de explicar al alumno. |
+| 15 | ¿Cómo se avisan los errores al alumno? | **Siempre con `ConvexError`, nunca con `Error`.** Convex censura el mensaje de un `Error` normal en producción y al cliente le llega un "Server Error" genérico. Ver Fase 9. |
 
 ---
 
@@ -145,6 +169,15 @@ Fase 8  →  Dominio y correo de Resend          feat/resend-domain-update
 
 La Fase 8 va al final porque depende de algo externo al código: que `ieee-estl.com` quede
 configurado y que se defina el correo destinatario. Nada más del plan la bloquea.
+
+**Agregadas después, con el sitio ya en producción** (ambas en la misma rama, por urgencia del
+evento):
+
+```
+Fase 9  →  Número de cuenta y un taller
+           por alumno                         feat/registro-numero-cuenta
+Fase 10 →  Filtro y limpieza en el dashboard  feat/registro-numero-cuenta
+```
 
 ---
 
@@ -816,38 +849,216 @@ npx convex env set SITE_URL https://ieee-estl.com
 
 ---
 
-## Pendientes técnicos detectados (fuera del alcance acordado)
+## Fase 9 — Número de cuenta y un taller por alumno
 
-No forman parte de las implementaciones solicitadas. Los dejo registrados para decidir después si
-entran como fase propia:
+**Rama:** `feat/registro-numero-cuenta` · **Terminada el 2026-10-14**
 
-- `bun lint` está roto: no existe `eslint.config.mjs` ni la dependencia de ESLint.
-- Dos componentes distintos exportan el mismo nombre `RegistrationForm`, lo que confunde al
-  importarlos.
-- `/register-event` está cerrado por hardcode (`useState(true)` en `isRegistrationClosed`): abrir
-  o cerrar el registro requiere editar y desplegar código.
-- Import sin usar `import { date } from 'zod'` en `src/app/data/members.ts`.
-- Import sin usar de `r2IncrementalCache` en `open-next.config.ts`.
-- Assets sin usar en `public/`: `next.svg`, `vercel.svg`, `window.svg`, `file.svg`, `globe.svg`.
-- No existe `.env.example` que documente las variables necesarias para levantar el proyecto.
-- No hay tests ni CI.
+### Motivo
+
+WIEEEK 2026 (26–28 de octubre) abre cuatro talleres en paralelo con cupo de 25 cada uno. El
+formulario pedía teléfono, que no sirve para saber si alguien ya tiene lugar, y nada impedía
+inscribirse a los cuatro.
+
+### Momento en que se hizo, que no es casualidad
+
+Los eventos de WIEEEK estaban escritos pero **sin commitear**, y antes de ellos `proximos` estaba
+vacío: no había ni un registro en producción. Esa ventana permitió cambiar un campo del esquema
+sin migrar datos. Se publicaron primero los eventos con `registroAbierto: false` —visibles para
+difusión, formulario cerrado— y se abrió el registro una vez probado el formulario nuevo.
+
+De haberse hecho al revés, habrían convivido filas con `telefono` y filas con `numeroCuenta` en la
+misma tabla, en pleno pico de inscripciones.
+
+### Cambios
+
+- `convex/schema.ts` — `telefono` → `numeroCuenta`, más el índice `by_numeroCuenta`.
+- `convex/validaciones.ts` — `esNumeroCuenta()` (6 dígitos) y **`exigir()` pasa a lanzar
+  `ConvexError`**.
+- `convex/workshops.ts` — verificación de inscripción previa **antes** del control de cupo, con
+  mensajes distintos según se repita el mismo taller o se intente otro.
+- `src/app/data/comingSoon.ts` — `tituloDe()`, para nombrar el taller en el aviso.
+- `src/components/registration-form.tsx` — campos numerados en una columna: cuenta, correo,
+  nombre, grupo, taller.
+- `src/components/registration-event-form.tsx` y `dashboard/Panel.tsx` — leer `error.data`,
+  columna "No. de cuenta".
+
+### El hallazgo que cambió el alcance
+
+`exigir()` usaba `throw new Error(mensaje)`. **Convex censura esos mensajes en los despliegues de
+producción** y le entrega al cliente un "Server Error" genérico; solo el contenido de un
+`ConvexError` cruza hasta el navegador.
+
+O sea que el aviso de "cupo lleno" llevaba desde la Fase 6 funcionando en desarrollo y
+perdiéndose justo donde importa. Los mensajes nuevos de "ya estás registrado en otro taller"
+habrían corrido la misma suerte, dejando la regla sin explicación visible.
+
+Cambiar `exigir()` —una línea— arregla los avisos de los cuatro formularios a la vez.
+
+### Procedimiento obligatorio al cambiar un campo del esquema
+
+Convex valida los documentos existentes contra el esquema nuevo y **rechaza el push** si alguno no
+encaja. Hay que vaciar `workshopRegistrations` en **dev y en prod** antes de subir el cambio.
+
+### Commits
+
+```
+convex: usa ConvexError para que los avisos lleguen en produccion
+talleres: pide numero de cuenta y limita a un taller por alumno
+formulario: reacomoda el registro de talleres en campos numerados
+eventos: abre el registro de los cuatro talleres de WIEEEK 2026
+```
 
 ---
 
-## Cambios pendientes sin commitear (previos a este plan)
+## Fase 10 — Filtro y limpieza en el dashboard
 
-El working tree de `dev` tiene una actualización de la mesa directiva 2026 sin commitear: Mario
-Lozano pasa a "Iconos", Iván Rojo a presidente, entra Martín Hernández como secretario, Malkhi
-pasa a diseñadora, se elimina `roberto.webp` y se renombra "Ex-Miembros" → "Iconos".
+**Rama:** `feat/registro-numero-cuenta` · **Terminada el 2026-10-14**
 
-`src/assets/memberImages/martin.webp` está **sin trackear**: falta el `git add`, y sin él el
-build falla en cualquier clon limpio.
+### Alcance
 
-**Recomendación:** cerrar esto en un commit propio sobre `dev` antes de abrir `feat/remove-clerk`.
+Sacar la lista de asistentes de **un** taller concreto, y poder vaciar los registros al terminar
+el evento sin entrar al panel de Convex.
+
+### Lo que ya estaba resuelto
+
+`TablaDatos` exportaba `ordenadas`, es decir lo que el filtro dejó visible y no la página en
+pantalla. Bastó con que el desplegable alimentara ese mismo flujo para que CSV y Sheets lo
+respetaran solos.
+
+### Lo que sí hubo que arreglar
+
+- **La pestaña de Sheets era fija** (`"Talleres"`): exportar Roblox y luego Unity sobrescribía lo
+  primero. Ahora es `Talleres — <nombre del taller>`, una por taller.
+- **El nombre del CSV** lleva el taller, para no acumular archivos iguales en Descargas.
+- La columna Taller mostraba `Desarrollo de videojuegos en roblox` (sólo quitaba guiones); ahora
+  usa `tituloDe()`.
+
+### El borrado, y por qué está acotado así
+
+`admin.limpiar` exige sesión igual que las queries —es alcanzable por su propia URL de Convex, el
+middleware de Next no la cubre— y **borra por lotes de 200**, porque una transacción de Convex
+tiene tope de documentos y vaciar una tabla de un golpe podría pasarse. El panel repite la llamada
+hasta que no queda ninguno.
+
+El botón borra **lo que el filtro tiene seleccionado**, o la tabla entera si no hay filtro, y pide
+escribir `BORRAR`.
+
+> **La trampa que se cerró.** El buscador estrecha lo que se *ve*, no lo que se *borra*. Si
+> alguien busca "Juan", ve una fila y pulsa Limpiar, se borran los 35 del taller. Cuando hay
+> búsqueda activa el diálogo lo advierte con el número real. Para borrar a **una** persona —un
+> cambio de taller, una baja— se usa el panel de Convex, no este botón.
+
+Se propuso exigir que se escribiera el nombre del taller y se descartó: «Despliega tu Servidor de
+Minecraft en AWS EC2» invita a copiar y pegar, y entonces deja de ser una traba. El peso recae en
+el diálogo, que dice exactamente cuántos registros se lleva.
+
+### Commits
 
 ```
-chore(content): update 2026 board members and rename Ex-Miembros to Iconos
-→ src/app/data/members.ts, src/app/data/exMembers.ts, src/app/members/page.tsx,
-  src/assets/memberImages/martin.webp, src/assets/memberImages/roberto.webp (eliminado),
-  src/app/favicon.ico, .gitignore
+convex: agrega mutation para vaciar registros por taller o evento
+dashboard: filtra por taller o evento y permite limpiar registros
+docs: documenta el numero de cuenta, el filtro y la limpieza
 ```
+
+---
+
+## Operación del sitio en producción
+
+### El despliegue
+
+```bash
+npx convex deploy --cmd "bun run deploy"
+```
+
+**Nunca `bun run deploy` a secas**: sin el prefijo, el build incrusta la URL de Convex de
+desarrollo y el sitio real escribiría en la base de pruebas sin dar ningún error.
+
+**Apagar `bun dev` y `npx convex dev` antes.** En Windows chocan por dos carpetas compartidas:
+`.next` (el build pisa los manifiestos del servidor → `ENOENT app-build-manifest.json`) y
+`.open-next` (Turbopack la mantiene bloqueada → `EPERM ... rmSync`). `scripts/limpia-open-next.mjs`
+convierte el segundo en un mensaje que explica qué apagar. No se puede resolver en
+`next.config.ts`: en Next 15.5 `watchOptions` sólo acepta `pollIntervalMs` y
+`webpack.watchOptions.ignored` no aplica con Turbopack.
+
+### Integraciones heredadas, pendientes de limpiar
+
+Dos restos de intentos de despliegue anteriores a Cloudflare Workers. **Ninguna toca
+`ieee-estl.com`.**
+
+| | Qué hace | Quién puede apagarla |
+|---|---|---|
+| **Cloudflare Pages** | Compila en cada push y falla. El proyecto vive en la cuenta `76ee6c16…`, que no es de la rama; lo montó Mario Lozano en nov. 2025. | Mario, o un *owner* de la organización quitándole el repo a la app de GitHub |
+| **GitHub Pages** | Publicaba el README en `ieee-estl.github.io`. Despertó al mover `main` el 2026-10-14. **Despublicado**; falta confirmar que no reviva. | Resuelto desde Settings → Pages |
+
+### El riesgo de continuidad, que es el de fondo
+
+- **Nadie identificado es *owner* de la organización `IEEE-ESTl`** en GitHub. El web master
+  actual es colaborador externo del repositorio: puede trabajar y desplegar, pero no tocar
+  instalaciones de apps, miembros ni transferir el repositorio. La organización se creó el
+  2024-02-10, probablemente por alguien de una generación anterior.
+- **El despliegue depende de que una persona tenga sesión de Wrangler** en la cuenta de Cloudflare
+  de Braulio. Un API token en `CLOUDFLARE_API_TOKEN`, guardado por la mesa directiva, lo
+  resolvería.
+
+Es el mismo patrón que ya costó Supabase, Clerk, Resend y los datos históricos: cuentas en manos
+de personas que se van. Conviene que **al menos dos personas** tengan acceso a cada cosa.
+
+---
+
+## Pendientes técnicos detectados (fuera del alcance acordado)
+
+No forman parte de las implementaciones solicitadas. Los dejo registrados para decidir después si
+entran como fase propia. **Revisado el 2026-10-14**, marcando lo ya resuelto.
+
+**Siguen abiertos:**
+
+- `bun lint` está roto: no existe `eslint.config.mjs` ni la dependencia de ESLint.
+- Dos componentes distintos exportan el mismo nombre `RegistrationForm`
+  (`registration-form.tsx` y `registration-event-form.tsx`), lo que confunde al importarlos.
+  Además comparten bastante lógica de validación que podría unificarse.
+- Import sin usar `import { date } from 'zod'` en `src/app/data/members.ts`.
+- Import sin usar de `r2IncrementalCache` en `open-next.config.ts`.
+- Assets sin usar en `public/`: `next.svg`, `vercel.svg`, `window.svg`, `file.svg`, `globe.svg`.
+- No hay tests ni CI.
+- Varios `h1` por página en algunas rutas.
+
+**Resueltos:**
+
+- ~~`/register-event` cerrado por hardcode~~ → Fase 6: las opciones salen de los datos del evento.
+- ~~No existe `.env.example`~~ → creado en la Fase 7.
+
+### Detectados después, con el sitio en producción
+
+- **Los flyers se subían a resolución de impresión.** `cinsoft.webp` pesaba 6.2 MB (6000×4000) y
+  `e-sportFlyer.webp` 1.8 MB (9375×11250), para mostrarse a 400–800 px. Se recomprimieron
+  limitando el lado largo a 1600 px: **11.1 MB → 2.5 MB** en total. Conviene revisarlo cada vez
+  que se agregue un flyer nuevo; no hay nada que lo compruebe automáticamente.
+- **`resumen` en `convex/admin.ts` cuenta con `.take(LIMITE).length`**, que es lo que Convex
+  desaconseja: por encima de 500 registros el conteo se queda corto en silencio. Sirve para el
+  volumen de la rama, pero si algún día se queda corto toca un contador denormalizado o el
+  componente `@convex-dev/aggregate`.
+
+---
+
+## Cambios pendientes sin commitear (previos a este plan) — RESUELTO
+
+> Esta sección describía una actualización de la mesa directiva 2026 que estaba sin commitear
+> cuando se escribió el plan. Se cerró antes de abrir `feat/remove-clerk`, y la mesa directiva se
+> volvió a actualizar el 2026-10-14 en `feat/update-events-members`. Se conserva el encabezado
+> sólo para que no parezca que la sección se perdió.
+
+---
+
+## Estado al 2026-10-14
+
+**Las 8 fases del plan original están terminadas y el sitio está en producción** en
+`https://ieee-estl.com` (y `www`), sobre Cloudflare Workers + OpenNext, contra el despliegue de
+Convex `tremendous-bobcat-873`. El de desarrollo es `reminiscent-mole-730`.
+
+Las fases 9 y 10 también están desplegadas y verificadas en producción.
+
+**WIEEEK 2026** (26–28 de octubre) está publicado con el registro abierto en sus cuatro talleres,
+cupo de 25 cada uno. El Torneo E-Sports está escrito pero comentado en `comingSoon.ts`, a la
+espera de su anuncio.
+
+`main`, `dev` y `origin` coinciden en el commit que está publicado.
