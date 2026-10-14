@@ -62,20 +62,20 @@ export const proximos: Proximo[] = [
     instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
     image: "/eventos/wieeekFlyer.webp",
   },
-  {
-    id: 2,
-    title: "Torneo E-Sports",
-    description:
-      "Torneo presencial de 3 días para competir en los videojuegos Minecraft, Clash Royale y FC27.",
-    fullDescription:
-      "El torneo presencial de E-Sports se llevará a cabo durante los tres días del evento. Los participantes competirán en tres videojuegos: Minecraft, Clash Royale y FC27. Se premiará a los primeros 3 lugares con mayor puntaje dentro de la tabla general.",
-    date: "26 de octubre de 2026",
-    location: "Escuela Superior de Tlahuelilpan",
-    category: "Evento",
-    instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
-    image: "/eventos/e-sportFlyer.webp",
-    registerLink: "https://torneo-wieeek.vercel.app/",
-  },
+  // {
+  //   id: 2,
+  //   title: "Torneo E-Sports",
+  //   description:
+  //     "Torneo presencial de 3 días para competir en los videojuegos Minecraft, Clash Royale y FC27.",
+  //   fullDescription:
+  //     "El torneo presencial de E-Sports se llevará a cabo durante los tres días del evento. Los participantes competirán en tres videojuegos: Minecraft, Clash Royale y FC27. Se premiará a los primeros 3 lugares con mayor puntaje dentro de la tabla general.",
+  //   date: "26 de octubre de 2026",
+  //   location: "Escuela Superior de Tlahuelilpan",
+  //   category: "Evento",
+  //   instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
+  //   image: "/eventos/e-sportFlyer.webp",
+  //   registerLink: "https://torneo-wieeek.vercel.app/",
+  // },
   {
     id: 3,
     title: "Despliega tu Servidor de Minecraft en AWS EC2",
