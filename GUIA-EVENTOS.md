@@ -275,8 +275,35 @@ Si pones los dos, gana `registerLink`.
 |---|---|---|
 | Correo | Solo `@uaeh.edu.mx` | Cualquiera |
 | Grupo | 8 opciones (101 a 702) | Las mismas **+ "Externo"** |
-| Teléfono | Mínimo 8 dígitos | Mínimo 10 |
+| Identifica a la persona con | **Número de cuenta** (6 dígitos) | Teléfono (mínimo 10 dígitos) |
+| ¿Puede inscribirse a varios? | **No, solo a uno** | Sí |
 | Guarda en | `workshopRegistrations` | `eventRegistrations` |
+
+### Un taller por alumno
+
+El formulario de talleres pide el **número de cuenta** de la UAEH, los 6 dígitos
+que asigna la universidad. No es un dato de contacto: es lo que permite saber si
+alguien ya tiene lugar.
+
+Con ese número, **cada alumno puede inscribirse a un solo taller**. Si lo
+intenta otra vez recibe uno de dos avisos, según el caso:
+
+| Situación | Lo que ve el alumno |
+|---|---|
+| Repite **el mismo** taller | *Este número de cuenta ya está registrado en «X». No hace falta inscribirse otra vez.* |
+| Intenta **otro** taller | *Este número de cuenta ya está registrado en «X». Solo puedes inscribirte a un taller. Si necesitas cambiarte, escríbenos.* |
+
+La regla se aplica **en el servidor**, igual que el cupo. No es que el formulario
+esconda el botón: aunque alguien llame la función desde la consola del navegador,
+choca con la misma verificación.
+
+**Para cambiar a alguien de taller** no hay botón: borra su registro desde el
+panel de Convex y pídele que se inscriba de nuevo. Es poco frecuente y así se
+evita un botón que podría usarse por error.
+
+Solo se valida que sean 6 dígitos, no que empiecen con `49`. Ese prefijo es de
+generación, y exigirlo dejaría fuera a quien venga de una anterior o de un
+reingreso.
 
 ---
 
@@ -334,8 +361,15 @@ git push
 
 ## Probar los formularios
 
-**Talleres** — prueba a propósito con un Gmail: debe rechazarlo. Esa validación
-corre en el servidor, no solo en el navegador.
+**Talleres** — tres cosas que deben fallar a propósito:
+
+1. Un Gmail en el correo: debe rechazarlo
+2. Un número de cuenta de 5 dígitos: debe pedir los 6
+3. El **mismo número de cuenta** dos veces: la segunda debe avisar que ya tiene
+   taller. Pruébalo repitiendo el mismo taller y también eligiendo otro, porque
+   el mensaje cambia
+
+Las tres validaciones corren en el servidor, no solo en el navegador.
 
 **Eventos** — acepta cualquier correo y tiene la opción de grupo "Externo".
 
@@ -365,10 +399,25 @@ repetidos.
 Cuatro pestañas, búsqueda, orden por columna y dos formas de exportar:
 
 - **CSV** — descarga un archivo
-- **Sheets** — escribe las filas en la hoja de Google del equipo, en la pestaña
-  que le corresponde. Reemplaza el contenido en cada envío: la hoja refleja el
-  estado actual, no un histórico. Si filtraste con la búsqueda, exporta solo lo
-  filtrado.
+- **Sheets** — escribe las filas en la hoja de Google del equipo. Reemplaza el
+  contenido en cada envío: la hoja refleja el estado actual, no un histórico.
+
+Ambas exportan **lo que está filtrado**, no solo la página que ves en pantalla.
+
+### Filtrar por taller o evento
+
+En las pestañas **Talleres** y **Eventos** hay un desplegable junto al buscador.
+Solo lista los que tienen registros, con el conteo al lado:
+`Desarrollo en Unity (23)`.
+
+Es lo que usas para sacar la lista de asistentes de un taller concreto:
+
+1. Elige el taller en el desplegable
+2. **CSV** descarga solo a esos, con el nombre del taller en el archivo
+3. **Sheets** los escribe en su propia pestaña: `Talleres — Desarrollo en Unity`
+
+Cada taller va a una pestaña distinta de la hoja, así que puedes exportar los
+cuatro sin que uno pise al anterior.
 
 **Las tablas se actualizan solas.** Si alguien se inscribe mientras tienes el
 panel abierto, la fila aparece sin que recargues. Para verlo, ten el panel en
@@ -383,11 +432,35 @@ bunx convex data workshopRegistrations
 
 Cambia el nombre por `eventRegistrations`, `joinRequests` o `studentInterests`.
 
-**Para borrar**, el panel es de solo lectura a propósito. Usa el panel de Convex:
+### Borrar registros al terminar un evento
+
+En cada pestaña hay un botón **Limpiar**. Borra los registros para que la base
+no se quede con la basura del semestre pasado.
+
+Borra **lo que el filtro tiene seleccionado**:
+
+- Con un taller elegido → borra solo los de ese taller
+- Sin filtro → borra **la tabla entera**
+
+Pide escribir `BORRAR` para confirmar, y el diálogo dice cuántos registros se
+lleva antes de hacerlo.
+
+> **Exporta antes.** No hay papelera ni deshacer. Una vez borrados, esos
+> registros no vuelven. El flujo sano al cerrar un taller es: filtrar → Sheets →
+> comprobar que la hoja tiene las filas → Limpiar.
+
+**Ojo con el buscador.** El buscador estrecha lo que *ves*, no lo que *se borra*.
+Si buscas "Juan", ves una fila y pulsas Limpiar, se borran los 35 del taller, no
+esa fila. Cuando hay una búsqueda activa el diálogo te lo advierte en rojo, pero
+conviene saberlo: **para borrar a una sola persona, usa el panel de Convex**, no
+este botón.
 
 ```bash
 bunx convex dashboard
 ```
+
+Ahí también se borra fila por fila, que es lo que necesitas para un cambio de
+taller o para quitar a alguien que se dio de baja.
 
 ---
 
@@ -403,6 +476,9 @@ bunx convex dashboard
 | Imagen rota | La ruta lleva `/public` de más, o no coinciden las mayúsculas |
 | "Registro Cerrado" sin esperarlo | Ningún evento de esa categoría tiene inscripción vigente |
 | Una opción dice "Cupo lleno" | Se alcanzó su `cupoMaximo`. Súbelo si quieres abrir más lugares |
+| Un alumno dice que no lo deja inscribirse | Ya tiene lugar en otro taller. El aviso le dice en cuál |
+| `ENOENT ... app-build-manifest.json` | Se mezclaron `bun dev` y `bun run build` (ver abajo) |
+| El esquema no sube: *documents do not match* | Cambiaste un campo y quedan registros con el anterior. Vacíalos antes |
 
 ### Caché rancia
 
@@ -417,6 +493,15 @@ bun dev
 Luego recarga con `Ctrl + Shift + R`. Un `F5` normal puede seguir usando los
 archivos viejos.
 
+El mismo arreglo sirve para `ENOENT: ... app-build-manifest.json`. Ese aparece
+por una razón concreta: **`bun dev` y `bun run build` escriben en la misma
+carpeta `.next`**. Si corres el build mientras el servidor de desarrollo está
+encendido, el build sobrescribe los archivos que el servidor estaba usando y la
+siguiente página que abras falla.
+
+No se rompe nada del código, es solo caché. Pero evítalo: no corras los dos a la
+vez.
+
 ---
 
 ## El ciclo de un semestre, resumido
@@ -424,8 +509,14 @@ archivos viejos.
 ```
 Anunciar     -> agregar objeto a comingSoon.ts con registroAbierto: true
 Cerrar cupos -> fechaLimiteRegistro, cupoMaximo, o registroAbierto: false
+Pasar lista  -> filtrar por taller en el panel y exportar a Sheets
 Archivar     -> mover a events.ts y borrar los 3 campos opcionales
+Limpiar      -> boton Limpiar, DESPUES de comprobar que la hoja esta completa
 ```
 
-Tres momentos, dos archivos, nada de tocar código de interfaz. Las inscripciones
-recibidas se quedan en la base pase lo que pase.
+Cinco momentos, dos archivos, nada de tocar código de interfaz. Las
+inscripciones se quedan en la base hasta que alguien decide borrarlas: archivar
+un evento no se lleva a nadie.
+
+El último paso es el único irreversible. Si dudas, no lo hagas: una base con
+registros de más no le estorba a nadie, una lista de asistentes perdida sí.
