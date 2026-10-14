@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
 import { bebasNeue, montserrat } from "@/lib/fonts"
 import TablaDatos, { type Columna } from "./TablaDatos"
+import { tituloDe } from "@/app/data/comingSoon"
 
 const ROLES: Record<string, string> = {
     "web-master": "Web Master",
@@ -72,7 +73,10 @@ function PanelDatos() {
         { titulo: "Nombre", valor: (f) => f.nombreCompleto },
         { titulo: "Correo", valor: (f) => f.email },
         { titulo: "Grupo", valor: (f) => f.grupo },
-        { titulo: "Taller", valor: (f) => legible(f.taller) },
+        // `tituloDe` da el titulo tal como esta escrito en los datos
+        // ("Desarrollo en Unity"); `legible` solo quitaba los guiones y
+        // devolvia "Desarrollo en unity".
+        { titulo: "Taller", valor: (f) => tituloDe(f.taller) },
     ]
 
     const columnasEventos: Columna<NonNullable<typeof eventos>[number]>[] = [
@@ -81,7 +85,7 @@ function PanelDatos() {
         { titulo: "Correo", valor: (f) => f.email },
         { titulo: "Teléfono", valor: (f) => f.telefono },
         { titulo: "Grupo", valor: (f) => (f.grupo === "external" ? "Externo" : f.grupo) },
-        { titulo: "Evento", valor: (f) => legible(f.evento) },
+        { titulo: "Evento", valor: (f) => tituloDe(f.evento) },
     ]
 
     const columnasIntereses: Columna<NonNullable<typeof intereses>[number]>[] = [
@@ -121,6 +125,7 @@ function PanelDatos() {
                         columnas={columnasIntereses}
                         nombreArchivo="queremos-conocerte"
                         pestana="Queremos Conocerte"
+                        tabla="studentInterests"
                         vacio="Todavía nadie ha respondido la encuesta."
                     />
                 </TabsContent>
@@ -131,6 +136,7 @@ function PanelDatos() {
                         columnas={columnasSolicitudes}
                         nombreArchivo="solicitudes-union"
                         pestana="Únete a la rama"
+                        tabla="joinRequests"
                         vacio="Todavía no hay solicitudes para unirse."
                     />
                 </TabsContent>
@@ -141,6 +147,13 @@ function PanelDatos() {
                         columnas={columnasTalleres}
                         nombreArchivo="registros-talleres"
                         pestana="Talleres"
+                        tabla="workshopRegistrations"
+                        grupo={{
+                            etiqueta: "taller",
+                            plural: "talleres",
+                            valorDe: (f) => f.taller,
+                            nombreDe: tituloDe,
+                        }}
                         vacio="Todavía no hay registros a talleres."
                     />
                 </TabsContent>
@@ -151,6 +164,13 @@ function PanelDatos() {
                         columnas={columnasEventos}
                         nombreArchivo="registros-eventos"
                         pestana="Eventos"
+                        tabla="eventRegistrations"
+                        grupo={{
+                            etiqueta: "evento",
+                            plural: "eventos",
+                            valorDe: (f) => f.evento,
+                            nombreDe: tituloDe,
+                        }}
                         vacio="Todavía no hay registros a eventos."
                     />
                 </TabsContent>
