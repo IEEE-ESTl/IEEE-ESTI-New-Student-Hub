@@ -62,33 +62,33 @@ export const proximos: Proximo[] = [
     instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
     image: "/eventos/wieeekFlyer.webp",
   },
-  // {
-  //   id: 2,
-  //   title: "Torneo E-Sports",
-  //   description:
-  //     "Torneo presencial de 3 días para competir en los videojuegos Minecraft, Clash Royale y FC27.",
-  //   fullDescription:
-  //     "El torneo presencial de E-Sports se llevará a cabo durante los tres días del evento. Los participantes competirán en tres videojuegos: Minecraft, Clash Royale y FC27. Se premiará a los primeros 3 lugares con mayor puntaje dentro de la tabla general.",
-  //   date: "26 de octubre de 2026",
-  //   location: "Escuela Superior de Tlahuelilpan",
-  //   category: "Evento",
-  //   instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
-  //   image: "/eventos/e-sportFlyer.webp",
-  //   registerLink: "https://torneo-wieeek.vercel.app/",
-  // },
+  {
+    id: 2,
+    title: "Torneo E-Sports",
+    description:
+      "Torneo presencial de 3 días para competir en los videojuegos Minecraft, Clash Royale y FC27.",
+    fullDescription:
+      "El torneo presencial de E-Sports se llevará a cabo durante los tres días del evento. Los participantes competirán en tres videojuegos: Minecraft, Clash Royale y FC27. Se premiará a los primeros 3 lugares con mayor puntaje dentro de la tabla general.",
+    date: "26 de octubre de 2026",
+    location: "Escuela Superior de Tlahuelilpan",
+    category: "Evento",
+    instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
+    image: "/eventos/e-sportFlyer.webp",
+    registerLink: "https://torneo-wieeek.vercel.app/",
+  },
   {
     id: 3,
     title: "Despliega tu Servidor de Minecraft en AWS EC2",
     description:
-      "Taller práctico de 5 horas para crear y administrar un servidor multijugador de Minecraft alojado en Amazon EC2.",
+      "Taller práctico de 4 horas para crear y administrar un servidor multijugador de Minecraft alojado en Amazon EC2.",
     fullDescription:
-      "El AWS Student Builder Group (SBG) impartirá este taller práctico de 5 horas el 28 de octubre. Aprenderás a integrar conceptos de la certificación AWS Certified Cloud Practitioner como cómputo (EC2), redes, almacenamiento (EBS) y costos.",
-    date: "28 de octubre de 2026",
+      "Te invitamos al taller presencial organizado por el AWS Student Builder Group UAEH, impartido por Rodrigo Roldán, donde aprenderás a aprovisionar, asegurar y automatizar la infraestructura completa de un servidor de Minecraft Java Edition utilizando la nube de Amazon Web Services (AWS)",
+    date: "26 de octubre de 2026",
     location: "Escuela Superior de Tlahuelilpan",
     category: "Taller",
-    instructor: "AWS Student Builder Group(SBG) - UAEH",
+    instructor: "AWS Student Builder Group - UAEH",
     image: "/talleres/tallerCORE.webp",
-    registroAbierto: false,
+    registroAbierto: true,
     cupoMaximo: 25,
   },
   {
