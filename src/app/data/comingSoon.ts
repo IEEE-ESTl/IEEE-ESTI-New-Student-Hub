@@ -228,6 +228,21 @@ export function cupoDe(valor: string): number | null {
 }
 
 /**
+ * Todos los talleres del evento, esten abiertos o no.
+ *
+ * Se diferencia de `opcionesDeRegistro("Taller")` en que no filtra por
+ * inscripcion vigente. Es a proposito: la usa el panel para mover a un alumno
+ * de taller, y ahi hace falta poder mandarlo a uno cuyo registro publico ya se
+ * cerro. El cupo si se sigue respetando; lo que no aplica es el "abierto al
+ * publico", porque quien mueve es la mesa directiva, no un alumno.
+ */
+export function talleresDelEvento(): OpcionRegistro[] {
+  return proximos
+    .filter((evento) => evento.category === "Taller")
+    .map((evento) => ({ valor: slug(evento.title), etiqueta: evento.title }));
+}
+
+/**
  * Titulo legible de un evento a partir de su identificador.
  *
  * No filtra por inscripcion abierta, al reves que `opcionesDeRegistro`: se usa
