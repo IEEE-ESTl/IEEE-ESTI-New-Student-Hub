@@ -3,12 +3,13 @@
 import type React from "react"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle, AlertCircle } from "lucide-react"
+import { CheckCircle, AlertCircle, ArrowRight } from "lucide-react"
 import { montserrat } from "@/lib/fonts"
 import { useMutation, useQuery } from "convex/react"
 import { ConvexError } from "convex/values"
@@ -420,6 +421,16 @@ export function RegistrationForm() {
                     >
                         {isSubmitting ? "Enviando..." : "Enviar Registro"}
                     </Button>
+
+                    <p className="border-t pt-4 text-center text-sm">
+                        <Link
+                            href="/estatus"
+                            className="inline-flex items-center gap-1 text-[#0371a4] underline underline-offset-4 transition-all duration-200 hover:gap-2"
+                        >
+                            ¿Ya te inscribiste? Consulta tu estatus
+                            <ArrowRight className="h-4 w-4" />
+                        </Link>
+                    </p>
                 </form>
             </CardContent>
         </Card>
