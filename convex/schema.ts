@@ -45,7 +45,9 @@ export default defineSchema({
         .index("by_taller", ["taller"])
         // Permite saber si una cuenta ya tiene taller sin recorrer la tabla.
         // Lo usa la regla de un taller por alumno.
-        .index("by_numeroCuenta", ["numeroCuenta"]),
+        .index("by_numeroCuenta", ["numeroCuenta"])
+        // Lo usa la consulta publica de estatus, para quien busca por correo.
+        .index("by_email", ["email"]),
 
     // Registro a eventos (/register-event).
     eventRegistrations: defineTable({
@@ -56,7 +58,10 @@ export default defineSchema({
         evento: v.string(),
     })
         // Mismo proposito que `by_taller`, para los eventos.
-        .index("by_evento", ["evento"]),
+        .index("by_evento", ["evento"])
+        // Los eventos no piden numero de cuenta, asi que el correo es lo unico
+        // por lo que la consulta publica de estatus puede encontrarlos.
+        .index("by_email", ["email"]),
 
     // Sección "Queremos Conocerte" (Fase 4).
     studentInterests: defineTable({
