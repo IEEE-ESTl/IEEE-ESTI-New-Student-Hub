@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button"
 import {
     AlertTriangle,
     ArrowDown,
+    ArrowLeftRight,
     ArrowUp,
     ArrowUpDown,
     Download,
@@ -37,9 +38,10 @@ import {
     Sheet,
     Trash2,
 } from "lucide-react"
-import { useAction, useMutation } from "convex/react"
+import { useAction, useMutation, useQuery } from "convex/react"
 import { ConvexError } from "convex/values"
 import { api } from "../../../convex/_generated/api"
+import type { OpcionRegistro } from "@/app/data/comingSoon"
 import { montserrat } from "@/lib/fonts"
 
 export type Columna<T> = {
@@ -90,7 +92,18 @@ type Props<T> = {
     tabla: TablaLimpiable
     /** Si se puede filtrar por taller o evento. */
     grupo?: Grupo<T>
+    /**
+     * Destinos a los que se puede mover un registro. Solo tiene sentido en la
+     * tabla de talleres; si no se pasa, no aparece el boton de mover.
+     *
+     * Incluye los talleres cerrados al publico a proposito: quien mueve es la
+     * mesa directiva, no un alumno.
+     */
+    mover?: { opciones: OpcionRegistro[] }
 }
+
+/** Que esta a punto de hacerse con una fila concreta. */
+type Accion = { tipo: "borrar" | "mover"; indice: number }
 
 const POR_PAGINA = 15
 
@@ -124,7 +137,7 @@ function parteDeArchivo(texto: string): string {
         .slice(0, 50)
 }
 
-export default function TablaDatos<T>({
+export default function TablaDatos<T extends { _id: string }>({
     filas,
     columnas,
     nombreArchivo,
@@ -132,6 +145,7 @@ export default function TablaDatos<T>({
     vacio,
     tabla,
     grupo,
+    mover,
 }: Props<T>) {
     const [busqueda, setBusqueda] = useState("")
     const [seleccion, setSeleccion] = useState("")
@@ -144,8 +158,18 @@ export default function TablaDatos<T>({
     const [palabra, setPalabra] = useState("")
     const [borrando, setBorrando] = useState(false)
 
+    const [accion, setAccion] = useState<Accion | null>(null)
+    const [destino, setDestino] = useState("")
+    const [procesando, setProcesando] = useState(false)
+
     const exportarAHoja = useAction(api.googleSheets.exportar)
     const limpiarTabla = useMutation(api.admin.limpiar)
+    const borrarUno = useMutation(api.admin.borrarUno)
+    const moverTaller = useMutation(api.admin.moverTaller)
+
+    // Para marcar como llenos los destinos a los que ya no cabe nadie. Es la
+    // misma query publica que usan los formularios, y es reactiva.
+    const llenos = useQuery(api.cupos.llenos)
 
     // Se precalculan los textos de cada celda una sola vez: los usan la
     // busqueda, el ordenamiento, el render y la exportacion.
@@ -326,6 +350,72 @@ export default function TablaDatos<T>({
         }
     }
 
+    /** La fila sobre la que se abrio el dialogo de borrar o mover. */
+    const filaDeAccion = accion === null ? undefined : (filas ?? [])[accion.indice]
+
+    /**
+     * Los valores de esa fila, para enseñarlos antes de hacer algo
+     * irreversible. Se muestran los de las columnas de la tabla en vez de un
+     * nombre suelto: confirmar "borrar a Juan Perez" es facil de equivocar si
+     * hay dos, y aqui se ve ademas su cuenta y su taller.
+     */
+    const detalleDeAccion =
+        accion === null
+            ? []
+            : columnas
+                  .map((columna, i) => ({ titulo: columna.titulo, valor: textos[accion.indice][i] }))
+                  .filter((d) => d.valor)
+
+    const cerrarAccion = () => {
+        if (procesando) return
+        setAccion(null)
+        setDestino("")
+    }
+
+    const abrirAccion = (tipo: Accion["tipo"], indice: number) => {
+        setAviso(null)
+        setDestino("")
+        setAccion({ tipo, indice })
+    }
+
+    /** Traduce el fallo del servidor a algo que se pueda leer en pantalla. */
+    const mensajeDe = (fallo: unknown, porDefecto: string) =>
+        fallo instanceof ConvexError ? String(fallo.data) : porDefecto
+
+    const borrarFila = async () => {
+        if (filaDeAccion === undefined) return
+        setProcesando(true)
+        try {
+            await borrarUno({ tabla, id: filaDeAccion._id })
+            setAviso({ tipo: "ok", texto: "Registro borrado." })
+            setAccion(null)
+        } catch (fallo) {
+            console.error("Error al borrar el registro:", fallo)
+            setAviso({ tipo: "error", texto: mensajeDe(fallo, "No se pudo borrar el registro.") })
+        } finally {
+            setProcesando(false)
+        }
+    }
+
+    const moverFila = async () => {
+        if (filaDeAccion === undefined || !destino || grupo === undefined) return
+        setProcesando(true)
+        try {
+            const { de, a } = await moverTaller({ id: filaDeAccion._id, taller: destino })
+            setAviso({
+                tipo: "ok",
+                texto: `Movido de «${grupo.nombreDe(de)}» a «${grupo.nombreDe(a)}». El lugar anterior quedó libre.`,
+            })
+            setAccion(null)
+            setDestino("")
+        } catch (fallo) {
+            console.error("Error al mover el registro:", fallo)
+            setAviso({ tipo: "error", texto: mensajeDe(fallo, "No se pudo mover el registro.") })
+        } finally {
+            setProcesando(false)
+        }
+    }
+
     if (filas === undefined) {
         return (
             <p className={`${montserrat.className} py-12 text-center text-muted-foreground`}>
@@ -483,6 +573,9 @@ export default function TablaDatos<T>({
                                     </TableHead>
                                 )
                             })}
+                            <TableHead className="w-0 whitespace-nowrap text-right">
+                                Acciones
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
 
@@ -490,7 +583,7 @@ export default function TablaDatos<T>({
                         {visibles.length === 0 ? (
                             <TableRow>
                                 <TableCell
-                                    colSpan={columnas.length}
+                                    colSpan={columnas.length + 1}
                                     className="py-12 text-center text-muted-foreground"
                                 >
                                     {busqueda || seleccion
@@ -509,6 +602,34 @@ export default function TablaDatos<T>({
                                             {celda || "—"}
                                         </TableCell>
                                     ))}
+                                    <TableCell className="align-top whitespace-nowrap text-right">
+                                        <div className="flex justify-end gap-1">
+                                            {mover && grupo && (
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    title="Mover a otro taller"
+                                                    aria-label="Mover a otro taller"
+                                                    onClick={() => abrirAccion("mover", indiceFila)}
+                                                    className="cursor-pointer text-muted-foreground hover:text-[#0371a4]"
+                                                >
+                                                    <ArrowLeftRight className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                title="Borrar este registro"
+                                                aria-label="Borrar este registro"
+                                                onClick={() => abrirAccion("borrar", indiceFila)}
+                                                className="cursor-pointer text-muted-foreground hover:text-destructive"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
                                 </TableRow>
                             ))
                         )}
@@ -543,6 +664,141 @@ export default function TablaDatos<T>({
                     </div>
                 </div>
             )}
+
+            <Dialog open={accion !== null} onOpenChange={(abierto) => !abierto && cerrarAccion()}>
+                <DialogContent className={montserrat.className}>
+                    <DialogHeader>
+                        <DialogTitle
+                            className={
+                                accion?.tipo === "borrar"
+                                    ? "flex items-center gap-2 text-destructive"
+                                    : "flex items-center gap-2 text-[#0371a4]"
+                            }
+                        >
+                            {accion?.tipo === "borrar" ? (
+                                <>
+                                    <Trash2 className="h-5 w-5" />
+                                    Borrar este registro
+                                </>
+                            ) : (
+                                <>
+                                    <ArrowLeftRight className="h-5 w-5" />
+                                    Mover a otro taller
+                                </>
+                            )}
+                        </DialogTitle>
+                        <DialogDescription asChild>
+                            <div className="space-y-3 pt-2 text-left">
+                                <dl className="rounded-md border bg-muted/40 p-3 text-sm">
+                                    {detalleDeAccion.map((d) => (
+                                        <div key={d.titulo} className="flex gap-2 py-0.5">
+                                            <dt className="shrink-0 text-muted-foreground">
+                                                {d.titulo}:
+                                            </dt>
+                                            <dd className="break-words text-foreground">{d.valor}</dd>
+                                        </div>
+                                    ))}
+                                </dl>
+
+                                {accion?.tipo === "borrar" ? (
+                                    <p>
+                                        Se borra solo este registro. No se puede deshacer.
+                                    </p>
+                                ) : (
+                                    <p>
+                                        El lugar que ocupa ahora queda libre en cuanto se mueva, y
+                                        otra persona podrá tomarlo.
+                                    </p>
+                                )}
+                            </div>
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {accion?.tipo === "mover" && mover && grupo && (
+                        <div className="space-y-2">
+                            <Label htmlFor="destino">Nuevo taller</Label>
+                            <Select value={destino} onValueChange={setDestino}>
+                                <SelectTrigger id="destino" className="w-full">
+                                    <SelectValue placeholder="Selecciona el taller de destino…" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {mover.opciones
+                                        // El taller en el que ya esta no es un destino.
+                                        .filter(
+                                            (o) =>
+                                                filaDeAccion === undefined ||
+                                                o.valor !== grupo.valorDe(filaDeAccion),
+                                        )
+                                        .map((o) => {
+                                            const lleno = llenos?.includes(o.valor) ?? false
+                                            return (
+                                                <SelectItem
+                                                    key={o.valor}
+                                                    value={o.valor}
+                                                    disabled={lleno}
+                                                >
+                                                    {o.etiqueta}
+                                                    {lleno && " — Cupo lleno"}
+                                                </SelectItem>
+                                            )
+                                        })}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+
+                    <div className="flex justify-end gap-2 pt-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={cerrarAccion}
+                            disabled={procesando}
+                            className="cursor-pointer"
+                        >
+                            Cancelar
+                        </Button>
+                        {accion?.tipo === "borrar" ? (
+                            <Button
+                                type="button"
+                                onClick={borrarFila}
+                                disabled={procesando}
+                                className="cursor-pointer bg-destructive text-white hover:bg-destructive/80"
+                            >
+                                {procesando ? (
+                                    <>
+                                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                                        Borrando…
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="mr-1 h-4 w-4" />
+                                        Borrar
+                                    </>
+                                )}
+                            </Button>
+                        ) : (
+                            <Button
+                                type="button"
+                                onClick={moverFila}
+                                disabled={procesando || !destino}
+                                className="cursor-pointer bg-[#0371a4] text-white hover:bg-[#0371a4]/80"
+                            >
+                                {procesando ? (
+                                    <>
+                                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                                        Moviendo…
+                                    </>
+                                ) : (
+                                    <>
+                                        <ArrowLeftRight className="mr-1 h-4 w-4" />
+                                        Mover
+                                    </>
+                                )}
+                            </Button>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={confirmando} onOpenChange={(abierto) => !borrando && setConfirmando(abierto)}>
                 <DialogContent className={montserrat.className}>

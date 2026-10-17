@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
 import { bebasNeue, montserrat } from "@/lib/fonts"
 import TablaDatos, { type Columna } from "./TablaDatos"
-import { tituloDe } from "@/app/data/comingSoon"
+import { talleresDelEvento, tituloDe } from "@/app/data/comingSoon"
 
 const ROLES: Record<string, string> = {
     "web-master": "Web Master",
@@ -154,6 +154,9 @@ function PanelDatos() {
                             valorDe: (f) => f.taller,
                             nombreDe: tituloDe,
                         }}
+                        // Se ofrecen todos los talleres, tambien los cerrados
+                        // al publico: quien mueve es la mesa directiva.
+                        mover={{ opciones: talleresDelEvento() }}
                         vacio="Todavía no hay registros a talleres."
                     />
                 </TabsContent>
