@@ -120,6 +120,92 @@ export function fechaLegible(evento: { fecha: string; fechaFin?: string }): stri
   return `${ini.dia} al ${fin.dia} de ${fin.mes} de ${fin.anio}`;
 }
 
+/**
+ * La fecha en corto, sin año, para las tarjetas del historial.
+ *
+ *   "2024-02-16"                  -> "16 feb"
+ *   "2026-10-26" a "2026-10-28"   -> "26–28 oct"
+ *   "2026-09-30" a "2026-10-02"   -> "30 sep – 2 oct"
+ *
+ * Va sin año porque las tarjetas ya estan agrupadas bajo el suyo; repetirlo en
+ * cada una solo agrega ruido. El texto completo sigue en el detalle.
+ */
+export function fechaCorta(evento: { fecha: string; fechaFin?: string }): string {
+  const corto = (mes: string) => mes.slice(0, 3);
+  const ini = partes(evento.fecha);
+  if (!evento.fechaFin || evento.fechaFin === evento.fecha) {
+    return `${ini.dia} ${corto(ini.mes)}`;
+  }
+
+  const fin = partes(evento.fechaFin);
+  if (ini.mes === fin.mes && ini.anio === fin.anio) {
+    return `${ini.dia}–${fin.dia} ${corto(fin.mes)}`;
+  }
+  return `${ini.dia} ${corto(ini.mes)} – ${fin.dia} ${corto(fin.mes)}`;
+}
+
+/** Año en que empieza un evento. Decide en que bloque del historial aparece. */
+export function anioDe(evento: { fecha: string }): string {
+  return evento.fecha.slice(0, 4);
+}
+
+export type BloqueAnio = { anio: string; eventos: Evento[] };
+
+/**
+ * El historial ordenado del mas nuevo al mas viejo y agrupado por año.
+ *
+ * En un empate de fecha se respeta el orden en que estan escritos en la lista.
+ * Asi, cuando un evento trae varios talleres el mismo dia, el evento principal
+ * —que se escribe primero— sale antes que sus talleres.
+ *
+ * Si se pasa una categoria, solo entran los de esa categoria, y los años que
+ * se quedan sin eventos desaparecen en lugar de mostrarse vacios.
+ */
+export function historialPorAnio(lista: Evento[], categoria?: Categoria): BloqueAnio[] {
+  const ordenados = lista
+    .map((evento, posicion) => ({ evento, posicion }))
+    .filter(({ evento }) => !categoria || evento.category === categoria)
+    .sort((a, b) => b.evento.fecha.localeCompare(a.evento.fecha) || a.posicion - b.posicion)
+    .map(({ evento }) => evento);
+
+  const bloques: BloqueAnio[] = [];
+  for (const evento of ordenados) {
+    const anio = anioDe(evento);
+    const ultimo = bloques[bloques.length - 1];
+    if (ultimo?.anio === anio) ultimo.eventos.push(evento);
+    else bloques.push({ anio, eventos: [evento] });
+  }
+  return bloques;
+}
+
+/**
+ * Cuantos eventos hay de cada categoria, solo de las que tienen alguno.
+ *
+ * Las categorias vacias no se incluyen a proposito: un filtro que no devuelve
+ * nada es un boton que no sirve. Cuando se archive la primera Conferencia,
+ * su filtro aparece solo.
+ */
+export function conteoPorCategoria(lista: Evento[]): { categoria: Categoria; total: number }[] {
+  return CATEGORIAS.map((categoria) => ({
+    categoria,
+    total: lista.filter((e) => e.category === categoria).length,
+  }))
+    .filter((c) => c.total > 0)
+    .sort((a, b) => b.total - a.total);
+}
+
+/**
+ * Lee la categoria del enlace: `/events?categoria=taller` -> "Taller".
+ *
+ * No distingue mayusculas, para que un enlace escrito a mano funcione. Si el
+ * valor no es una categoria —un enlace viejo, una errata— devuelve `undefined`
+ * y la pagina muestra todo en lugar de una lista vacia.
+ */
+export function categoriaDesdeParametro(valor: string | undefined): Categoria | undefined {
+  if (!valor) return undefined;
+  return CATEGORIAS.find((c) => c.toLowerCase() === valor.toLowerCase());
+}
+
 export const eventos: Evento[] = [
   {
     id: 1,
@@ -242,6 +328,7 @@ export const eventos: Evento[] = [
     fullDescription:
       "Durante este hackathon, los participantes pusieron en práctica sus conocimientos de desarrollo frontend y exploraron diferentes tecnologías para crear soluciones creativas. El reto consistió en diseñar una interfaz para una plataforma web de películas que fuera atractiva, intuitiva y funcional.",
     fecha: "2025-11-28",
+    fechaFin: "2025-12-05",
     location: "Online",
     category: "Hackathon",
     instructor: "Equipo IEEE ESTl",

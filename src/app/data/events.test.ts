@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { eventos, fechaLegible } from "./events";
+import {
+    categoriaDesdeParametro,
+    conteoPorCategoria,
+    eventos,
+    fechaCorta,
+    fechaLegible,
+    historialPorAnio,
+    type Evento,
+} from "./events";
 
 describe("fechaLegible", () => {
     test("un solo dia", () => {
@@ -59,5 +67,97 @@ describe("los datos reales", () => {
         for (const evento of eventos) {
             expect(evento.fecha, evento.title).toMatch(/^\d{4}-\d{2}-\d{2}$/);
         }
+    });
+});
+
+/** Un evento minimo: solo importan la fecha, la categoria y el titulo. */
+function ev(id: number, fecha: string, category: Evento["category"], fechaFin?: string): Evento {
+    return {
+        id,
+        title: `Evento ${id}`,
+        description: "",
+        fullDescription: "",
+        fecha: fecha as Evento["fecha"],
+        fechaFin: fechaFin as Evento["fechaFin"],
+        location: "",
+        category,
+        instructor: "",
+        image: "",
+    };
+}
+
+describe("fechaCorta", () => {
+    test("un dia, sin año", () => {
+        expect(fechaCorta({ fecha: "2024-02-16" })).toBe("16 feb");
+    });
+    test("rango dentro del mismo mes", () => {
+        expect(fechaCorta({ fecha: "2026-10-26", fechaFin: "2026-10-28" })).toBe("26–28 oct");
+    });
+    test("rango que cruza de mes", () => {
+        expect(fechaCorta({ fecha: "2026-09-30", fechaFin: "2026-10-02" })).toBe("30 sep – 2 oct");
+    });
+});
+
+describe("historialPorAnio", () => {
+    const lista = [
+        ev(1, "2024-02-16", "Taller"),
+        ev(2, "2025-08-14", "Evento"),
+        ev(3, "2026-10-26", "Evento"),
+        ev(4, "2026-10-26", "Taller"),
+        ev(5, "2024-10-28", "Congreso"),
+    ];
+
+    test("lo mas nuevo primero, agrupado por año", () => {
+        const bloques = historialPorAnio(lista);
+        expect(bloques.map((b) => b.anio)).toEqual(["2026", "2025", "2024"]);
+        expect(bloques[2].eventos.map((e) => e.id)).toEqual([5, 1]);
+    });
+
+    test("en empate de fecha respeta el orden de la lista", () => {
+        // El evento principal se escribe antes que sus talleres y debe salir primero.
+        expect(historialPorAnio(lista)[0].eventos.map((e) => e.id)).toEqual([3, 4]);
+    });
+
+    test("al filtrar, los años sin eventos de esa categoria desaparecen", () => {
+        const bloques = historialPorAnio(lista, "Taller");
+        expect(bloques.map((b) => b.anio)).toEqual(["2026", "2024"]);
+        expect(bloques.flatMap((b) => b.eventos).every((e) => e.category === "Taller")).toBe(true);
+    });
+
+    test("no altera la lista original", () => {
+        const antes = lista.map((e) => e.id);
+        historialPorAnio(lista);
+        expect(lista.map((e) => e.id)).toEqual(antes);
+    });
+});
+
+describe("conteoPorCategoria", () => {
+    test("solo categorias con eventos, de la mas frecuente a la menos", () => {
+        const conteo = conteoPorCategoria([
+            ev(1, "2024-01-01", "Taller"),
+            ev(2, "2024-01-02", "Taller"),
+            ev(3, "2024-01-03", "Congreso"),
+        ]);
+        expect(conteo).toEqual([
+            { categoria: "Taller", total: 2 },
+            { categoria: "Congreso", total: 1 },
+        ]);
+    });
+
+    test("con los datos reales, los totales suman todos los eventos", () => {
+        const suma = conteoPorCategoria(eventos).reduce((n, c) => n + c.total, 0);
+        expect(suma).toBe(eventos.length);
+    });
+});
+
+describe("categoriaDesdeParametro", () => {
+    test("no distingue mayusculas", () => {
+        expect(categoriaDesdeParametro("taller")).toBe("Taller");
+        expect(categoriaDesdeParametro("HACKATHON")).toBe("Hackathon");
+    });
+    test("un valor que no es categoria se ignora en vez de dejar la lista vacia", () => {
+        expect(categoriaDesdeParametro("talleres")).toBeUndefined();
+        expect(categoriaDesdeParametro(undefined)).toBeUndefined();
+        expect(categoriaDesdeParametro("")).toBeUndefined();
     });
 });
