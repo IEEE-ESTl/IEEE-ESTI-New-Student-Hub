@@ -604,7 +604,10 @@ export default function TablaDatos<T extends { _id: string }>({
                                     ))}
                                     <TableCell className="align-top whitespace-nowrap text-right">
                                         <div className="flex justify-end gap-1">
-                                            {mover && grupo && (
+                                            {/* Sin talleres proximos no hay a donde mover a nadie:
+                                                pasa entre un evento y otro. Mejor no ofrecer el boton
+                                                que abrir un menu vacio. */}
+                                            {mover && grupo && mover.opciones.length > 0 && (
                                                 <Button
                                                     type="button"
                                                     variant="ghost"
