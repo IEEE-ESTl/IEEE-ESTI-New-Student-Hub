@@ -224,8 +224,46 @@ function revisarDuplicados(): void {
   }
 }
 
+/**
+ * Revisa las fechas de todos los eventos, proximos y archivados.
+ *
+ * El tipo `FechaISO` solo exige la forma "numero-numero-numero": deja pasar
+ * "2026-13-05" o "2026-1-5". Un error asi no rompe la compilacion, pero
+ * desordena el historial en silencio, porque las fechas se ordenan como texto.
+ * Aqui se atrapa con un aviso que dice cual evento y que arreglar.
+ */
+function revisarFechas(): void {
+  const valida = (f: string) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f)) return false;
+    const d = new Date(`${f}T00:00:00Z`);
+    // Un mes 13 da una fecha invalida, y `toISOString()` sobre ella lanza una
+    // excepcion: sin esta linea, la revision que debe avisar tumbaria el
+    // servidor de desarrollo.
+    if (Number.isNaN(d.getTime())) return false;
+    // Ida y vuelta por Date: "2026-02-30" se convertiria en "2026-03-02".
+    return d.toISOString().slice(0, 10) === f;
+  };
+
+  for (const evento of [...proximos, ...eventos]) {
+    for (const [campo, valor] of [["fecha", evento.fecha], ["fechaFin", evento.fechaFin]] as const) {
+      if (valor !== undefined && !valida(valor)) {
+        console.warn(
+          `[eventos] "${evento.title}": ${campo} "${valor}" no es una fecha valida. ` +
+            `Usa el formato AAAA-MM-DD con ceros, por ejemplo "2027-03-05".`,
+        );
+      }
+    }
+    if (evento.fechaFin && evento.fechaFin < evento.fecha) {
+      console.warn(
+        `[eventos] "${evento.title}": fechaFin (${evento.fechaFin}) es anterior a fecha (${evento.fecha}).`,
+      );
+    }
+  }
+}
+
 if (process.env.NODE_ENV !== "production") {
   revisarDuplicados();
+  revisarFechas();
 }
 
 /**
