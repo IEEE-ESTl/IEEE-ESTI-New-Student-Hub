@@ -4,7 +4,7 @@ import { describe, expect, test } from "vitest";
 import schema from "./schema";
 import { api } from "./_generated/api";
 import { slug } from "../src/app/data/comingSoon";
-import { eventos } from "../src/app/data/events";
+import { eventos, fechaLegible } from "../src/app/data/events";
 import { usarTalleresDePrueba } from "../pruebas/talleresDePrueba";
 
 /**
@@ -211,7 +211,7 @@ describe("eventos archivados", () => {
         // Sin buscar en los archivados, aqui saldria el identificador crudo
         // ("desarrollo-en-unity") y la fecha vacia.
         expect(r.inscripciones[0].titulo).toBe(archivado.title);
-        expect(r.inscripciones[0].fecha).toBe(archivado.date);
+        expect(r.inscripciones[0].fecha).toBe(fechaLegible(archivado));
         expect(r.inscripciones[0].categoria).toBe("Taller");
     });
 
