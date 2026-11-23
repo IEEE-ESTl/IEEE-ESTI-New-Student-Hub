@@ -1,279 +1,105 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Calendar, MapPin, User, X } from "lucide-react"
+import Link from "next/link"
+import { ExternalLink } from "lucide-react"
 import { Button } from "./ui/button"
 import { BlurFade } from "./magicui/blur-fade"
-import { Badge } from "./ui/badge"
-import { bebasNeue, jetBrainsMono, montserrat } from "@/lib/fonts";
+import { DetalleEvento, TarjetaEvento, useDetalleEvento } from "./eventos/TarjetaEvento"
+import { bebasNeue, montserrat } from "@/lib/fonts"
+import {
+    aceptaInscripciones,
+    proximosOrdenados,
+    registroVigente,
+    rutaDeRegistro,
+    type Proximo,
+} from "@/app/data/comingSoon"
+import { fechaLegible } from "@/app/data/events"
 
-import { proximos, registroVigente, rutaDeRegistro, type Proximo } from "@/app/data/comingSoon";
-import Link from "next/link";
-import { COLOR_CATEGORIA, fechaLegible } from "@/app/data/events";
+/** Aviso en la tarjeta de que el evento acepta inscripciones. */
+function InscripcionesAbiertas() {
+    return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden />
+            Inscripciones abiertas
+        </span>
+    )
+}
+
+/**
+ * El boton de inscripcion del detalle.
+ *
+ * Dos caminos, y el orden importa:
+ *
+ *   1. `registerLink` gana si existe. Si alguien lo escribio es porque la
+ *      inscripcion vive fuera del sitio (otra institucion, un patrocinador).
+ *      Ojo: esos datos NO llegan al dashboard.
+ *   2. Si no, y el registro esta vigente, se enlaza al formulario propio. La
+ *      ruta la decide la categoria: talleres a /register-workshop, lo demas a
+ *      /register-event.
+ *
+ * Sin ninguno de los dos, no hay boton: el evento esta anunciado pero todavia
+ * no acepta inscripciones.
+ */
+function BotonInscripcion({ evento }: { evento: Proximo }) {
+    const clases = "mt-6 w-full cursor-pointer bg-[#0371a4] text-white hover:bg-[#0371a4]/80"
+
+    if (evento.registerLink) {
+        return (
+            <Button asChild className={clases}>
+                <a href={evento.registerLink} target="_blank" rel="noopener noreferrer">
+                    Regístrate aquí
+                    <ExternalLink className="ml-1 h-4 w-4" />
+                </a>
+            </Button>
+        )
+    }
+
+    if (registroVigente(evento)) {
+        return (
+            <Button asChild className={clases}>
+                <Link href={rutaDeRegistro(evento)}>Regístrate aquí</Link>
+            </Button>
+        )
+    }
+
+    return null
+}
 
 export default function ComingSoon() {
-    const [selectedCard, setSelectedCard] = useState<Proximo | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isClosing, setIsClosing] = useState(false);
-    const [isAnimating, setIsAnimating] = useState(false);
-
-    const openModal = (card: Proximo) => {
-        setSelectedCard(card);
-        setIsModalOpen(true);
-        setTimeout(() => {
-            setIsAnimating(true);
-        }, 10);
-    }
-
-    const closeModal = () => {
-        setIsAnimating(false);
-        setIsClosing(true);
-        setTimeout(() => {
-            setSelectedCard(null);
-            setIsModalOpen(false);
-            setIsClosing(false);
-        }, 300); 
-    }
-
-        // Cerrar modal con la tecla ESC
-    useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                closeModal();
-            }
-        };
-
-        if (isModalOpen) {
-            document.addEventListener('keydown', handleEscape);
-            // Prevenir el scroll del body cuando el modal está abierto
-            document.body.style.overflow = 'hidden';
-        }
-
-        return () => {
-            document.removeEventListener('keydown', handleEscape);
-            document.body.style.overflow = 'unset';
-        };
-    }, [isModalOpen]);
-
-        // Cerrar modal con la tecla ESC
-    useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                closeModal();
-            }
-        };
-
-        if (isModalOpen) {
-            document.addEventListener('keydown', handleEscape);
-            // Prevenir el scroll del body cuando el modal está abierto
-            document.body.style.overflow = 'hidden';
-        }
-
-        return () => {
-            document.removeEventListener('keydown', handleEscape);
-            document.body.style.overflow = 'unset';
-        };
-    }, [isModalOpen]);
-
-    // Cerrar modal con la tecla ESC
-    useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                closeModal();
-            }
-        };
-
-        if (isModalOpen) {
-            document.addEventListener('keydown', handleEscape);
-            // Prevenir el scroll del body cuando el modal está abierto
-            document.body.style.overflow = 'hidden';
-        }
-
-        return () => {
-            document.removeEventListener('keydown', handleEscape);
-            document.body.style.overflow = 'unset';
-        };
-    }, [isModalOpen]);
-
+    const detalle = useDetalleEvento<Proximo>()
+    const lista = proximosOrdenados()
 
     return (
-        <section className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8" id="coming-soon">
-            <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-12">
-                    <h1 className={`${bebasNeue.className} font-bold text-[#0371a4] text-center text-7xl lg:text-8xl xl:text-9xl`}>Próximamente</h1>
+        <section className={`${montserrat.className} min-h-screen bg-white px-4 py-12 sm:px-6 lg:px-8`} id="coming-soon">
+            <div className="mx-auto max-w-7xl">
+                <div className="mb-12 text-center">
+                    <h1
+                        className={`${bebasNeue.className} text-center text-7xl font-bold text-[#0371a4] lg:text-8xl xl:text-9xl`}
+                    >
+                        Próximamente
+                    </h1>
+                    <p className="mt-2 text-gray-500">Lo que viene, del más cercano al más lejano.</p>
                 </div>
 
-                {/* Grid de eventos */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {proximos.map((card, idx) => (
-                        <BlurFade 
-                            delay={0.15 + idx * 0.05} 
-                            inView 
-                            key={card.id}
-                        >
-                            
-                        
-                        <div
-                            key={card.id}
-                            className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden"
-                            onClick={() => openModal(card)}
-                        >
-                            <div className="relative">
-                                <img
-                                    src={card.image}
-                                    alt={card.title}
-                                    className="w-full h-48 object-cover"
-                                />
-                                <Badge
-                                    className={`absolute top-4 left-4 ${COLOR_CATEGORIA[card.category]}`}
-                                >
-                                    {card.category}
-                                </Badge>
-                            </div>
-
-                            <div className={`${montserrat.className} p-6`}>
-                                <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2">
-                                    {card.title}
-                                </h3>
-                                <p className="text-gray-600 mb-4 line-clamp-3">
-                                    {card.description}
-                                </p>
-                                <div className="flex items-center text-sm text-gray-500 mb-4">
-                                    <Calendar className="w-4 h-4 mr-2"/>
-                                    <span>{fechaLegible(card)}</span>
-                                </div>
-                                <Button
-                                    className="w-full bg-[#0371a4] hover:bg-[#0371a4]/80 text-white"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        openModal(card);
-                                    }}
-                                >
-                                    Ver más
-                                </Button>
-                            </div>
-                        </div>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    {lista.map((evento, i) => (
+                        <BlurFade key={evento.id} delay={Math.min(i, 8) * 0.05} inView className="h-full">
+                            <TarjetaEvento
+                                evento={evento}
+                                // Completa, con año: aqui no hay agrupacion por año que lo
+                                // de por sentado, y para planear importa.
+                                fecha={fechaLegible(evento)}
+                                onAbrir={() => detalle.abrir(evento)}
+                                distintivo={aceptaInscripciones(evento) ? <InscripcionesAbiertas /> : undefined}
+                            />
                         </BlurFade>
                     ))}
                 </div>
 
-                {/* Modal de eventos */}
-                {selectedCard && (
-                    <div 
-                        className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all duration-300 ${
-                            isAnimating && !isClosing ? 'opacity-100' : 'opacity-0'
-                        }`}
-                        onClick={closeModal}
-                    >
-                        <div 
-                            className={`bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 ${
-                                isAnimating && !isClosing
-                                    ? 'scale-100 opacity-100 translate-y-0' 
-                                    : 'scale-95 opacity-0 translate-y-4'
-                            }`}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="relative">
-                                <button
-                                    onClick={closeModal}
-                                    className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
-                                >
-                                    <X className="w-5 h-5"/>
-                                </button>
-                            </div>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-                                <div className="relative">
-                                    <img
-                                        src={selectedCard.image}
-                                        alt={selectedCard.title}
-                                        className="w-full h-64 lg:h-full object-cover lg:rounded-l-2xl"
-                                    />
-                                    <Badge
-                                        className={`absolute top-4 left-4 ${COLOR_CATEGORIA[selectedCard.category]}`}
-                                    >
-                                        {selectedCard.category}
-                                    </Badge>
-                                </div>
-
-                                <div className="p-8">
-                                    <h2 className={`${montserrat.className} text-3xl font-bold text-gray-900 mb-4`}>
-                                        {selectedCard.title}
-                                    </h2>
-                                    <p className={`${jetBrainsMono.className} text-gray-600 mb-6 leading-relaxed`}>
-                                        {selectedCard.fullDescription}
-                                    </p>
-
-                                    <div className="space-y-4 mb-8">
-                                        <div className={`${montserrat.className} flex items-center text-gray-700`}>
-                                            <Calendar className="w-5 h-5 mr-2 text-blue-600"/>
-                                            <div>
-                                                <div className="font-medium">
-                                                    {fechaLegible(selectedCard)}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className={`${montserrat.className} flex items-center text-gray-700`}>
-                                            <MapPin className="w-5 h-5 mr-2 text-red-500"/>
-                                            <div>
-                                                <div className="font-medium">
-                                                    {selectedCard.location}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className={`${montserrat.className} flex items-center text-gray-700`}>
-                                            <User className="w-5 h-5 mr-2 text-green-600"/>
-                                            <div>
-                                                <div className="font-medium">
-                                                    {selectedCard.instructor}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/*
-                                          Dos caminos para inscribirse, y el orden importa:
-
-                                          1. `registerLink` gana si existe. Si alguien lo escribio
-                                             es porque la inscripcion vive fuera del sitio (otra
-                                             institucion, un patrocinador). Ojo: esos datos NO
-                                             llegan al dashboard.
-                                          2. Si no, y el registro esta vigente, se enlaza al
-                                             formulario propio. La ruta la decide la categoria:
-                                             talleres a /register-workshop, lo demas a
-                                             /register-event.
-
-                                          Sin ninguno de los dos, no hay boton: el evento esta
-                                          anunciado pero todavia no acepta inscripciones.
-                                        */}
-                                        {selectedCard.registerLink ? (
-                                            <div className="flex justify-center items-center">
-                                                <Button
-                                                    className="bg-[#0371a4] hover:bg-[#0371a4]/80 text-white w-full cursor-pointer mt-5"
-                                                    onClick={() => window.open(selectedCard.registerLink, "_blank", "noopener,noreferrer")}
-                                                >
-                                                    Regístrate aquí
-                                                </Button>
-                                            </div>
-                                        ) : registroVigente(selectedCard) ? (
-                                            <div className="flex justify-center items-center">
-                                                <Button asChild className="bg-[#0371a4] hover:bg-[#0371a4]/80 text-white w-full cursor-pointer mt-5">
-                                                    <Link href={rutaDeRegistro(selectedCard)}>
-                                                        Regístrate aquí
-                                                    </Link>
-                                                </Button>
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <DetalleEvento evento={detalle.evento} visible={detalle.visible} onCerrar={detalle.cerrar}>
+                    {detalle.evento && <BotonInscripcion evento={detalle.evento} />}
+                </DetalleEvento>
             </div>
         </section>
     )
-    
-
 }
