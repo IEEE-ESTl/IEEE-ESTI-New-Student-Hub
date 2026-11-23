@@ -2,6 +2,7 @@ import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { esEmail, esNumeroCuenta, limpiar } from "./validaciones";
 import { buscarEvento } from "../src/app/data/comingSoon";
+import { fechaLegible } from "../src/app/data/events";
 
 /**
  * Consulta publica: "¿en que taller quede?".
@@ -55,7 +56,7 @@ function datosDelEvento(valor: string) {
     return {
         titulo: evento?.title ?? valor,
         categoria: evento?.category ?? "Evento",
-        fecha: evento?.date ?? "",
+        fecha: evento ? fechaLegible(evento) : "",
         lugar: evento?.location ?? "",
         instructor: evento?.instructor ?? "",
     };

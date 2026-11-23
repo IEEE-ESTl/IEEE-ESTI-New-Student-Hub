@@ -6,7 +6,7 @@ import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { BlurFade } from "./magicui/blur-fade"
 import { bebasNeue, jetBrainsMono, montserrat } from "@/lib/fonts";
-import { eventos, COLOR_CATEGORIA, type Evento } from "@/app/data/events";
+import { eventos, COLOR_CATEGORIA, fechaLegible, type Evento } from "@/app/data/events";
 
 
 export default function Events() {
@@ -99,7 +99,7 @@ export default function Events() {
                                 </p>
                                 <div className="flex items-center text-sm text-gray-500 mb-4">
                                     <Calendar className="w-4 h-4 mr-2"/>
-                                    <span>{event.date}</span>
+                                    <span>{fechaLegible(event)}</span>
                                 </div>
                                 <Button
                                     className="w-full bg-[#0371a4] hover:bg-[#0371a4]/80 text-white"
@@ -168,7 +168,7 @@ export default function Events() {
                                             <Calendar className="w-5 h-5 mr-2 text-blue-600"/>
                                             <div>
                                                 <div className="font-medium">
-                                                    {selectedEvent.date}
+                                                    {fechaLegible(selectedEvent)}
                                                 </div>
                                             </div>
                                         </div>

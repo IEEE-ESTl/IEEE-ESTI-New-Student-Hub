@@ -9,7 +9,7 @@ import { bebasNeue, jetBrainsMono, montserrat } from "@/lib/fonts";
 
 import { proximos, registroVigente, rutaDeRegistro, type Proximo } from "@/app/data/comingSoon";
 import Link from "next/link";
-import { COLOR_CATEGORIA } from "@/app/data/events";
+import { COLOR_CATEGORIA, fechaLegible } from "@/app/data/events";
 
 export default function ComingSoon() {
     const [selectedCard, setSelectedCard] = useState<Proximo | null>(null);
@@ -140,7 +140,7 @@ export default function ComingSoon() {
                                 </p>
                                 <div className="flex items-center text-sm text-gray-500 mb-4">
                                     <Calendar className="w-4 h-4 mr-2"/>
-                                    <span>{card.date}</span>
+                                    <span>{fechaLegible(card)}</span>
                                 </div>
                                 <Button
                                     className="w-full bg-[#0371a4] hover:bg-[#0371a4]/80 text-white"
@@ -209,7 +209,7 @@ export default function ComingSoon() {
                                             <Calendar className="w-5 h-5 mr-2 text-blue-600"/>
                                             <div>
                                                 <div className="font-medium">
-                                                    {selectedCard.date}
+                                                    {fechaLegible(selectedCard)}
                                                 </div>
                                             </div>
                                         </div>
