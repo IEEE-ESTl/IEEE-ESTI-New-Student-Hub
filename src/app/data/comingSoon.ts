@@ -90,6 +90,32 @@ export function registroVigente(evento: Proximo): boolean {
 }
 
 /**
+ * Si se puede inscribir uno a este evento ahora mismo, por la via que sea.
+ *
+ * Hay dos vias: un `registerLink` a una pagina externa, o el formulario propio
+ * con el registro vigente. La usan la etiqueta "Inscripciones abiertas" de la
+ * tarjeta y el boton del detalle: si cada uno lo decidiera por su cuenta,
+ * podrian contradecirse.
+ */
+export function aceptaInscripciones(evento: Proximo): boolean {
+  return Boolean(evento.registerLink) || registroVigente(evento);
+}
+
+/**
+ * Los proximos, del mas cercano al mas lejano.
+ *
+ * Es el orden contrario al del historial, y a proposito: quien entra a
+ * Próximamente quiere saber que viene primero. En empate se respeta el orden de
+ * la lista, para que un evento principal salga antes que sus talleres.
+ */
+export function proximosOrdenados(lista: Proximo[] = proximos): Proximo[] {
+  return lista
+    .map((evento, posicion) => ({ evento, posicion }))
+    .sort((a, b) => a.evento.fecha.localeCompare(b.evento.fecha) || a.posicion - b.posicion)
+    .map(({ evento }) => evento);
+}
+
+/**
  * A que formulario mandar a quien quiere inscribirse a este evento.
  * Los talleres son solo para alumnos de la ESTl; el resto acepta externos.
  */
