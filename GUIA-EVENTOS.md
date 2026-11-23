@@ -66,7 +66,7 @@ Declarados en `src/app/data/events.ts`, en `export type Evento`.
 | `title` | texto | Nombre. **También genera el identificador que se guarda en la base** | `"Taller de Docker"` |
 | `description` | texto | Frase corta, se ve en la tarjeta | `"Aprende contenedores desde cero."` |
 | `fullDescription` | texto | Texto largo, se ve al abrir el modal | `"En este taller..."` |
-| `date` | texto | Fecha **para leer**, formato libre | `"3 de marzo de 2027"` |
+| `fecha` | `"AAAA-MM-DD"` | Día del evento, o el primero si dura varios | `"2027-03-03"` |
 | `location` | texto | Dónde | `"Escuela Superior de Tlahuelilpan"` |
 | `category` | lista cerrada | Decide el formulario y el color | `"Taller"` |
 | `instructor` | texto | Quién lo imparte | `"Paulo Mantilla"` |
@@ -74,6 +74,22 @@ Declarados en `src/app/data/events.ts`, en `export type Evento`.
 
 Si omites cualquiera, el proyecto no compila. Es intencional: un evento sin
 fecha o sin lugar no sirve publicado.
+
+**La fecha se escribe `"2027-03-03"`, no `"3 de marzo de 2027"`.** El sitio la
+convierte sola en texto para leer. Se guarda así porque es la única forma de
+ordenar el historial del más nuevo al más viejo y agruparlo por año. Escribe
+siempre los ceros: `"2027-03-03"`, nunca `"2027-3-3"`.
+
+Si el evento dura **más de un día**, agrega `fechaFin` con el último día. Este
+campo sirve igual en `comingSoon.ts` que en `events.ts`:
+
+```ts
+        fecha: "2026-10-26",
+        fechaFin: "2026-10-28",     // se ve como "26 al 28 de octubre de 2026"
+```
+
+Si una fecha está mal escrita —un mes 13, un 30 de febrero, un fin antes del
+inicio— la consola de `bun dev` lo avisa con el nombre del evento.
 
 ### Opcionales (4)
 
@@ -95,7 +111,7 @@ no ocurre.
         title: "Taller de Docker",
         description: "Aprende a empaquetar aplicaciones con contenedores.",
         fullDescription: "En este taller aprenderás qué es un contenedor, cómo construir una imagen y cómo levantar tu aplicación en cualquier equipo.",
-        date: "3 de marzo de 2027",
+        fecha: "2027-03-03",
         location: "Escuela Superior de Tlahuelilpan",
         category: "Taller",
         instructor: "Paulo Mantilla",
@@ -224,7 +240,8 @@ ya inscritos, nadie pierde su lugar: simplemente no entran más.
 
 1. Corta el objeto de `comingSoon.ts`
 2. Pégalo dentro de `eventos` en `events.ts`
-3. **Borra** las líneas `registroAbierto`, `fechaLimiteRegistro` y `registerLink`
+3. **Borra** las líneas `registroAbierto`, `fechaLimiteRegistro`, `registerLink` y `cupoMaximo`
+   (si `fechaFin` existe, **se queda**: también vale en el historial)
 
 El paso 3 no es opcional: `events.ts` usa un tipo que no conoce esos campos, y
 el proyecto no compilará si los dejas.
@@ -510,7 +527,7 @@ vez.
 Anunciar     -> agregar objeto a comingSoon.ts con registroAbierto: true
 Cerrar cupos -> fechaLimiteRegistro, cupoMaximo, o registroAbierto: false
 Pasar lista  -> filtrar por taller en el panel y exportar a Sheets
-Archivar     -> mover a events.ts y borrar los 3 campos opcionales
+Archivar     -> mover a events.ts y borrar los 4 campos de registro
 Limpiar      -> boton Limpiar, DESPUES de comprobar que la hoja esta completa
 ```
 
