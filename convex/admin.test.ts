@@ -3,7 +3,8 @@ import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import schema from "./schema";
 import { api } from "./_generated/api";
-import { cupoDe, talleresDelEvento } from "../src/app/data/comingSoon";
+import { cupoDe } from "../src/app/data/comingSoon";
+import { usarTalleresDePrueba } from "../pruebas/talleresDePrueba";
 
 /**
  * Pruebas del panel: borrar un registro y mover a un alumno de taller.
@@ -14,13 +15,12 @@ import { cupoDe, talleresDelEvento } from "../src/app/data/comingSoon";
  * afirmarlo: la ultima prueba llena un taller, saca a una persona y verifica
  * que alguien nuevo puede entrar.
  *
- * Los talleres NO se escriben a mano: se leen de `comingSoon.ts`, que es de
- * donde los leen tambien las funciones. Asi las pruebas siguen valiendo cuando
- * cambien los datos del evento, en vez de romperse al archivar WIEEEK.
+ * Los talleres son inventados (`pruebas/talleresDePrueba.ts`) y no los del
+ * evento en curso: entre un evento y otro la lista de proximos queda vacia, y
+ * las pruebas no deben depender de que haya algo anunciado.
  */
 
-const TALLERES = talleresDelEvento();
-const [PRIMERO, SEGUNDO] = TALLERES;
+const [PRIMERO, SEGUNDO] = usarTalleresDePrueba();
 
 /**
  * Levanta un backend en memoria.

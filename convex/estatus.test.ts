@@ -3,7 +3,9 @@ import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import schema from "./schema";
 import { api } from "./_generated/api";
-import { talleresDelEvento } from "../src/app/data/comingSoon";
+import { slug } from "../src/app/data/comingSoon";
+import { eventos } from "../src/app/data/events";
+import { usarTalleresDePrueba } from "../pruebas/talleresDePrueba";
 
 /**
  * Pruebas de la consulta publica de estatus.
@@ -13,7 +15,7 @@ import { talleresDelEvento } from "../src/app/data/comingSoon";
  * prueba dedicada a que el correo no salga jamas en la respuesta.
  */
 
-const [PRIMERO] = talleresDelEvento();
+const [PRIMERO, SEGUNDO] = usarTalleresDePrueba();
 
 function crear() {
     return convexTest(schema, import.meta.glob("./**/*.*s"));
@@ -166,7 +168,6 @@ describe("estatus.consultar", () => {
 
     test("refleja el taller nuevo despues de que el panel mueva a alguien", async () => {
         const t = crear();
-        const [, SEGUNDO] = talleresDelEvento();
 
         const id = await inscribirTaller(t, {
             nombreCompleto: "Abdiel Avila Neri",
@@ -183,5 +184,39 @@ describe("estatus.consultar", () => {
 
         expect(r.inscripciones).toHaveLength(1);
         expect(r.inscripciones[0].titulo).toBe(SEGUNDO.etiqueta);
+    });
+});
+
+describe("eventos archivados", () => {
+    // Se toma un taller real del historial en vez de nombrar uno: la prueba
+    // sigue valiendo aunque cambie cual es el ultimo taller archivado.
+    const archivado = [...eventos].reverse().find((e) => e.category === "Taller")!;
+    const valor = slug(archivado.title);
+
+    test("la consulta de estatus muestra titulo y fecha de un taller que ya termino", async () => {
+        const t = crear();
+        await t.run(
+            async (ctx) =>
+                await ctx.db.insert("workshopRegistrations", {
+                    nombreCompleto: "Abdiel Avila Neri",
+                    email: "abdiel@uaeh.edu.mx",
+                    numeroCuenta: "446034",
+                    grupo: "702",
+                    taller: valor,
+                }),
+        );
+
+        const r = await t.query(api.estatus.consultar, { identificador: "446034" });
+
+        // Sin buscar en los archivados, aqui saldria el identificador crudo
+        // ("desarrollo-en-unity") y la fecha vacia.
+        expect(r.inscripciones[0].titulo).toBe(archivado.title);
+        expect(r.inscripciones[0].fecha).toBe(archivado.date);
+        expect(r.inscripciones[0].categoria).toBe("Taller");
+    });
+
+    test("el panel encuentra el titulo de un taller archivado", async () => {
+        const { tituloDe } = await import("../src/app/data/comingSoon");
+        expect(tituloDe(valor)).toBe(archivado.title);
     });
 });
