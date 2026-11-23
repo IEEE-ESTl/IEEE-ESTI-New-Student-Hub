@@ -200,5 +200,83 @@ export const eventos: Evento[] = [
     category: "Taller",
     instructor: "Paulo Mantilla",
     image: "/talleres/tallerSwiftUI.webp",
+  },
+  {
+    id: 12,
+    title: "Wieeek 2026 - Primera Edición: Desarrollo de Videojuegos",
+    description:
+      "Tres días de talleres presenciales para crear videojuegos con Roblox, Unity y Blender, organizados por la IEEE Student Branch de la Escuela Superior de Tlahuelilpan.",
+    fullDescription:
+      "La primera edición de WIEEEK 2026 es un evento presencial de tres días (del 26 al 28 de octubre de 2026) enfocado en el desarrollo de videojuegos. Se imparten cuatro actividades en paralelo donde aprenderas nuevas habilidades en el desarrollo de videojuegos. El evento es organizado por la IEEE Student Branch de la Escuela Superior de Tlahuelilpan, con el apoyo de la Coordinación de la Licenciatura en Ingeniería de Software.",
+    date: "26 de octubre de 2026",
+    location: "Escuela Superior de Tlahuelilpan",
+    category: "Evento",
+    instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
+    image: "/eventos/wieeekFlyer.webp",
+  },
+  {
+    id: 13,
+    title: "Torneo E-Sports",
+    description:
+      "Torneo presencial de 3 días para competir en los videojuegos Minecraft, Clash Royale y FC27.",
+    fullDescription:
+      "El torneo presencial de E-Sports se llevará a cabo durante los tres días del evento. Los participantes competirán en tres videojuegos: Minecraft, Clash Royale y FC27. Se premiará a los primeros 3 lugares con mayor puntaje dentro de la tabla general.",
+    date: "26 de octubre de 2026",
+    location: "Escuela Superior de Tlahuelilpan",
+    category: "Evento",
+    instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
+    image: "/eventos/e-sportFlyer.webp",
+  },
+  {
+    id: 14,
+    title: "Despliega tu Servidor de Minecraft en AWS EC2",
+    description:
+      "Taller práctico de 4 horas para crear y administrar un servidor multijugador de Minecraft alojado en Amazon EC2.",
+    fullDescription:
+      "Te invitamos al taller presencial organizado por el AWS Student Builder Group UAEH, impartido por Rodrigo Roldán, donde aprenderás a aprovisionar, asegurar y automatizar la infraestructura completa de un servidor de Minecraft Java Edition utilizando la nube de Amazon Web Services (AWS)",
+    date: "26 de octubre de 2026",
+    location: "Escuela Superior de Tlahuelilpan",
+    category: "Taller",
+    instructor: "AWS Student Builder Group - UAEH",
+    image: "/talleres/tallerCORE.webp",
+  },
+  {
+    id: 15,
+    title: "Desarrollo de Videojuegos en Roblox",
+    description:
+      "Taller presencial de 9 horas en total enfocado en la creación y publicación de un nivel jugable en Roblox.",
+    fullDescription:
+      "En este taller impartido por el Dr. Ismael Domínguez, trabajarás durante 3 horas por día en los días 1, 2 y 3 del evento. El objetivo principal y entregable final es crear un nivel jugable publicado en Roblox.",
+    date: "26 de octubre de 2026",
+    location: "Escuela Superior de Tlahuelilpan",
+    category: "Taller",
+    instructor: "Dr. Ismael Domínguez",
+    image: "/talleres/tallerRoblox.webp",
+  },
+  {
+    id: 16,
+    title: "Desarrollo en Unity",
+    description:
+      "Taller continuo de 6 horas donde desarrollarás una escena con un personaje animado y controlable en Unity.",
+    fullDescription:
+      "Impartido por el Lic. Moisés Valenzuela, este taller se realiza en un bloque continuo de 3 horas durante los días 1 y 2. Al finalizar tu participación en el Laboratorio 2, deberás entregar una escena con un personaje animado y controlable.",
+    date: "26 de octubre de 2026",
+    location: "Escuela Superior de Tlahuelilpan",
+    category: "Taller",
+    instructor: "Lic. Moisés Valenzuela",
+    image: "/talleres/tallerUnity.webp",
+  },
+  {
+    id: 17,
+    title: "Creación de assets en Blender",
+    description:
+      "Taller de 9 horas dedicado al modelado 3D para la creación de un set de modelos exportados y listos para motor.",
+    fullDescription:
+      "La Dra. Julia Arana impartirá este taller de 3 horas diarias durante los tres días del evento en el Laboratorio 3. Aprenderás a diseñar elementos 3D con el objetivo de entregar un set de modelos exportados listos para usarse en un motor gráfico.",
+    date: "26 de octubre de 2026",
+    location: "Escuela Superior de Tlahuelilpan",
+    category: "Taller",
+    instructor: "Dra. Julia Arana",
+    image: "/talleres/tallerBlender.webp",
   }
 ];

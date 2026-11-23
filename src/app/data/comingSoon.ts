@@ -1,4 +1,4 @@
-import type { Categoria, Evento } from "./events";
+import { eventos, type Categoria, type Evento } from "./events";
 
 // Proximos eventos. Esta lista es la UNICA fuente de verdad sobre lo que viene:
 // de aqui salen el anuncio en el home, la pagina /coming-soon y las opciones de
@@ -49,107 +49,8 @@ export type Proximo = Evento & {
 };
 
 export const proximos: Proximo[] = [
-  {
-    id: 1,
-    title: "Wieeek 2026 - Primera Edición: Desarrollo de Videojuegos",
-    description:
-      "Tres días de talleres presenciales para crear videojuegos con Roblox, Unity y Blender, organizados por la IEEE Student Branch de la Escuela Superior de Tlahuelilpan.",
-    fullDescription:
-      "La primera edición de WIEEEK 2026 es un evento presencial de tres días (del 26 al 28 de octubre de 2026) enfocado en el desarrollo de videojuegos. Se imparten cuatro actividades en paralelo donde aprenderas nuevas habilidades en el desarrollo de videojuegos. El evento es organizado por la IEEE Student Branch de la Escuela Superior de Tlahuelilpan, con el apoyo de la Coordinación de la Licenciatura en Ingeniería de Software.",
-    date: "26 de octubre de 2026",
-    location: "Escuela Superior de Tlahuelilpan",
-    category: "Evento",
-    instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
-    image: "/eventos/wieeekFlyer.webp",
-  },
-  {
-    id: 2,
-    title: "Torneo E-Sports",
-    description:
-      "Torneo presencial de 3 días para competir en los videojuegos Minecraft, Clash Royale y FC27.",
-    fullDescription:
-      "El torneo presencial de E-Sports se llevará a cabo durante los tres días del evento. Los participantes competirán en tres videojuegos: Minecraft, Clash Royale y FC27. Se premiará a los primeros 3 lugares con mayor puntaje dentro de la tabla general.",
-    date: "26 de octubre de 2026",
-    location: "Escuela Superior de Tlahuelilpan",
-    category: "Evento",
-    instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
-    image: "/eventos/e-sportFlyer.webp",
-    registerLink: "https://torneo-wieeek.vercel.app/",
-  },
-  {
-    id: 3,
-    title: "Despliega tu Servidor de Minecraft en AWS EC2",
-    description:
-      "Taller práctico de 4 horas para crear y administrar un servidor multijugador de Minecraft alojado en Amazon EC2.",
-    fullDescription:
-      "Te invitamos al taller presencial organizado por el AWS Student Builder Group UAEH, impartido por Rodrigo Roldán, donde aprenderás a aprovisionar, asegurar y automatizar la infraestructura completa de un servidor de Minecraft Java Edition utilizando la nube de Amazon Web Services (AWS)",
-    date: "26 de octubre de 2026",
-    location: "Escuela Superior de Tlahuelilpan",
-    category: "Taller",
-    instructor: "AWS Student Builder Group - UAEH",
-    image: "/talleres/tallerCORE.webp",
-    registroAbierto: false,
-    cupoMaximo: 25,
-  },
-  {
-    id: 4,
-    title: "Desarrollo de Videojuegos en Roblox",
-    description:
-    "Taller presencial de 9 horas en total enfocado en la creación y publicación de un nivel jugable en Roblox.",
-    fullDescription:
-    "En este taller impartido por el Dr. Ismael Domínguez, trabajarás durante 3 horas por día en los días 1, 2 y 3 del evento. El objetivo principal y entregable final es crear un nivel jugable publicado en Roblox.",
-    date: "26 de octubre de 2026",
-    location: "Escuela Superior de Tlahuelilpan",
-    category: "Taller",
-    instructor: "Dr. Ismael Domínguez",
-    image: "/talleres/tallerRoblox.webp",
-    registroAbierto: false,
-    cupoMaximo: 25,
-  },
-  {
-    id: 5,
-    title: "Desarrollo en Unity",
-    description:
-      "Taller continuo de 6 horas donde desarrollarás una escena con un personaje animado y controlable en Unity.",
-    fullDescription:
-      "Impartido por el Lic. Moisés Valenzuela, este taller se realiza en un bloque continuo de 3 horas durante los días 1 y 2. Al finalizar tu participación en el Laboratorio 2, deberás entregar una escena con un personaje animado y controlable.",
-    date: "26 de octubre de 2026",
-    location: "Escuela Superior de Tlahuelilpan",
-    category: "Taller",
-    instructor: "Lic. Moisés Valenzuela",
-    image: "/talleres/tallerUnity.webp",
-    registroAbierto: false,
-    cupoMaximo: 25,
-  },
-  {
-    id: 6,
-    title: "Creación de assets en Blender",
-    description:
-      "Taller de 9 horas dedicado al modelado 3D para la creación de un set de modelos exportados y listos para motor.",
-    fullDescription:
-      "La Dra. Julia Arana impartirá este taller de 3 horas diarias durante los tres días del evento en el Laboratorio 3. Aprenderás a diseñar elementos 3D con el objetivo de entregar un set de modelos exportados listos para usarse en un motor gráfico.",
-    date: "26 de octubre de 2026",
-    location: "Escuela Superior de Tlahuelilpan",
-    category: "Taller",
-    instructor: "Dra. Julia Arana",
-    image: "/talleres/tallerBlender.webp",
-    registroAbierto: false,
-    cupoMaximo: 25,
-  },
-  
-  // {
-  //   id: 7,
-  //   title: "Masterclass",
-  //   description:
-  //     "Sesión común de 1 hora en el auditorio dirigida a los asistentes de todos los talleres.",
-  //   fullDescription:
-  //     "Esta Masterclass, impartida por la Coordinación de la LIS, es una sesión plenaria diseñada para los asistentes de los distintos talleres. Se llevará a cabo el día 2 del evento en un horario de 11:00 a 12:00 horas en el Auditorio.",
-  //   date: "26 de octubre de 2026",
-  //   location: "Escuela Superior de Tlahuelilpan",
-  //   category: "Conferencia",
-  //   instructor: "Coordinación de la LIS",
-  //   image: "/eventos/wieeekFlyer.webp",
-  // }
+  // Vacia entre eventos. Al anunciar uno nuevo, se agrega aqui con la
+  // plantilla de GUIA-EVENTOS.md; al terminar, se mueve a `eventos` en events.ts.
 ];
 
 /**
@@ -243,17 +144,33 @@ export function talleresDelEvento(): OpcionRegistro[] {
 }
 
 /**
+ * Busca un evento por su identificador, entre los proximos **y** los archivados.
+ *
+ * Las inscripciones guardadas en Convex sobreviven al evento: cuando un evento
+ * termina y se mueve a `events.ts`, sus registros siguen en la base. Si esta
+ * busqueda mirara solo los proximos, el panel y la consulta de estatus dejarian
+ * de encontrar el titulo y la fecha de todo lo que ya paso. Primero se miran
+ * los proximos porque son los que estan en uso.
+ */
+export function buscarEvento(valor: string): Evento | undefined {
+  return (
+    proximos.find((e) => slug(e.title) === valor) ??
+    eventos.find((e) => slug(e.title) === valor)
+  );
+}
+
+/**
  * Titulo legible de un evento a partir de su identificador.
  *
  * No filtra por inscripcion abierta, al reves que `opcionesDeRegistro`: se usa
  * para decirle a un alumno en que taller quedo inscrito, y ese taller pudo
- * haberse cerrado o llenado despues de que se registro.
+ * haberse cerrado, llenado o archivado despues de que se registro.
  *
- * Si el evento ya no esta en la lista devuelve el identificador tal cual, que
+ * Si el evento no esta en ninguna lista devuelve el identificador tal cual, que
  * sigue siendo legible ("desarrollo-en-unity") y es mejor que no decir nada.
  */
 export function tituloDe(valor: string): string {
-  return proximos.find((e) => slug(e.title) === valor)?.title ?? valor;
+  return buscarEvento(valor)?.title ?? valor;
 }
 
 /**
@@ -274,9 +191,17 @@ function revisarDuplicados(): void {
   const porSlug = new Map<string, string[]>();
   const porId = new Map<number, number>();
 
-  for (const evento of proximos) {
+  // Los identificadores se comparan contra los archivados tambien: un evento
+  // nuevo que se llame igual que uno viejo compartiria identificador con el, y
+  // `buscarEvento` devolveria el que no es.
+  for (const evento of [...proximos, ...eventos]) {
     const clave = slug(evento.title);
     porSlug.set(clave, [...(porSlug.get(clave) ?? []), evento.title]);
+  }
+
+  // Los `id` solo tienen que ser unicos dentro de cada lista: React los usa
+  // como clave al pintar una lista a la vez.
+  for (const evento of proximos) {
     porId.set(evento.id, (porId.get(evento.id) ?? 0) + 1);
   }
 

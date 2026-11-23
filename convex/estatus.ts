@@ -1,7 +1,7 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { esEmail, esNumeroCuenta, limpiar } from "./validaciones";
-import { proximos, slug } from "../src/app/data/comingSoon";
+import { buscarEvento } from "../src/app/data/comingSoon";
 
 /**
  * Consulta publica: "¿en que taller quede?".
@@ -44,9 +44,14 @@ function enmascarar(nombre: string): string {
     return [pila, ...resto.map((p) => `${p[0].toUpperCase()}.`)].join(" ");
 }
 
-/** Los datos del evento que acompañan a una inscripcion. */
+/**
+ * Los datos del evento que acompañan a una inscripcion.
+ *
+ * Busca tambien entre los archivados: un alumno puede consultar su estatus
+ * despues de que el evento termino y se movio a `events.ts`.
+ */
 function datosDelEvento(valor: string) {
-    const evento = proximos.find((e) => slug(e.title) === valor);
+    const evento = buscarEvento(valor);
     return {
         titulo: evento?.title ?? valor,
         categoria: evento?.category ?? "Evento",
