@@ -359,7 +359,7 @@ export const eventos: Evento[] = [
     location: "Escuela Superior de Tlahuelilpan",
     category: "Evento",
     instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
-    image: "/eventos/wieeekFlyer.webp",
+    image: "/eventos/wieeek-2026.webp",
   },
   {
     id: 13,
@@ -373,7 +373,7 @@ export const eventos: Evento[] = [
     location: "Escuela Superior de Tlahuelilpan",
     category: "Evento",
     instructor: "IEEE - Escuela Superior de Tlahuelilpan Student Branch",
-    image: "/eventos/e-sportFlyer.webp",
+    image: "/eventos/e-sport-ganadores.webp",
   },
   {
     id: 14,
@@ -400,7 +400,7 @@ export const eventos: Evento[] = [
     location: "Escuela Superior de Tlahuelilpan",
     category: "Taller",
     instructor: "Dr. Ismael Domínguez",
-    image: "/talleres/tallerRoblox.webp",
+    image: "/talleres/tallerRoblox2.webp",
   },
   {
     id: 16,
@@ -414,7 +414,7 @@ export const eventos: Evento[] = [
     location: "Escuela Superior de Tlahuelilpan",
     category: "Taller",
     instructor: "Lic. Moisés Valenzuela",
-    image: "/talleres/tallerUnity.webp",
+    image: "/talleres/tallerUnity2.webp",
   },
   {
     id: 17,
@@ -428,6 +428,6 @@ export const eventos: Evento[] = [
     location: "Escuela Superior de Tlahuelilpan",
     category: "Taller",
     instructor: "Dra. Julia Arana",
-    image: "/talleres/tallerBlender.webp",
+    image: "/talleres/tallerBlender2.webp",
   }
 ];
