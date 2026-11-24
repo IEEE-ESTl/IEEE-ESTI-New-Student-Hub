@@ -53,3 +53,7 @@ next-env.d.ts
 # Convex agent skills (reinstalables con `bunx convex ai-files install`)
 .agents/skills/
 .claude/skills/
+
+# Fotos de miembros sin fondo, exportadas de Canva. Son la fuente de las
+# fotos de src/assets/memberImages: se guardan en local pero no se suben.
+/recortes-miembros/
